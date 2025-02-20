@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { Note } from "@/types/clockwork";
 
 export async function GET(
   request: Request,
@@ -15,7 +14,7 @@ export async function GET(
 
     const noteId = params.id;
     const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/notes/${noteId}`;
-    
+
     const response = await fetch(url, {
       headers: {
         "X-API-Key": firmApiKey,
