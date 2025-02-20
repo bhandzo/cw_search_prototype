@@ -5,10 +5,49 @@ import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
 
 export default function Home() {
-  const [searchHistory, setSearchHistory] = useState<Array<{ query: string; timestamp: number }>>([]);
+  interface SearchHistoryItem {
+    query: string;
+    timestamp: number;
+    structuredQuery?: {
+      role?: string;
+      skills?: string[];
+      location?: string;
+      experience?: string;
+    };
+    status: 'pending' | 'complete' | 'error';
+  }
 
-  const handleSearch = (query: string) => {
-    setSearchHistory((prev) => [...prev, { query, timestamp: Date.now() }]);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+
+  const handleSearch = async (query: string) => {
+    const timestamp = Date.now();
+    setSearchHistory((prev) => [...prev, { query, timestamp, status: 'pending' }]);
+    
+    try {
+      const response = await fetch('/api/openai-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userInput: query })
+      });
+      
+      const data = await response.json();
+      
+      setSearchHistory((prev) => 
+        prev.map(item => 
+          item.timestamp === timestamp 
+            ? { ...item, structuredQuery: data.structuredQuery, status: 'complete' }
+            : item
+        )
+      );
+    } catch (error) {
+      setSearchHistory((prev) => 
+        prev.map(item => 
+          item.timestamp === timestamp 
+            ? { ...item, status: 'error' }
+            : item
+        )
+      );
+    }
   };
 
   return (
