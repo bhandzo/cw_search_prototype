@@ -90,7 +90,7 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
       {Object.entries(editedKeywords).map(([category, terms]) => (
         <div key={category} className="group">
           <div className="flex items-center gap-2">
-            <div className="font-medium text-sm uppercase">{category}</div>
+            <div className="font-medium text-sm">{category.charAt(0).toUpperCase() + category.slice(1)}</div>
             {isEditing && (
               <Button
                 variant="ghost"
@@ -106,7 +106,7 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
             {terms.map((term, index) => (
               <div
                 key={`${category}-${index}`}
-                className="group flex items-center bg-secondary/50 hover:bg-secondary/70 rounded-lg px-3 py-1 text-sm transition-colors"
+                className="group flex items-center bg-secondary/50 hover:bg-secondary/70 rounded-full px-3 py-1 text-sm transition-colors border border-secondary"
               >
                 {editingKeyword?.category === category && editingKeyword?.index === index ? (
                   <input
