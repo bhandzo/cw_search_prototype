@@ -1,82 +1,46 @@
 import { NextResponse } from "next/server";
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 const MAX_RESULTS = 5;
 
-async function saveSummaryToFile(personId: string, summaryData: any) {
-  if (process.env.NODE_ENV === 'development') {
+type SummaryData = object; // or use `unknown` if you prefer
+
+// Define a type for the keywords object
+type Keywords = Record<string, string[]>;
+
+// Define a type for the person object
+interface Person {
+  id: string;
+  name: string;
+  // Add other properties of the person object as needed
+}
+
+async function saveSummaryToFile(personId: string, summaryData: SummaryData) {
+  if (process.env.NODE_ENV === "development") {
     try {
-      const summariesDir = path.join(process.cwd(), 'dev-data', 'summaries');
-      
+      const summariesDir = path.join(process.cwd(), "dev-data", "summaries");
       // Ensure directory exists
-      if (!fs.existsSync(summariesDir)){
+      if (!fs.existsSync(summariesDir)) {
         fs.mkdirSync(summariesDir, { recursive: true });
       }
-      
-      const filename = path.join(summariesDir, `${personId}-${Date.now()}.json`);
+
+      const filename = path.join(
+        summariesDir,
+        `${personId}-${Date.now()}.json`
+      );
       const dataToSave = {
         personId,
         timestamp: new Date().toISOString(),
-        ...summaryData
+        ...summaryData,
       };
-      
-      fs.writeFileSync(
-        filename, 
-        JSON.stringify(dataToSave, null, 2)
-      );
+
+      fs.writeFileSync(filename, JSON.stringify(dataToSave, null, 2));
       console.log(`Saved summary to ${filename}`);
     } catch (error) {
-      console.error('Error saving summary file:', error);
+      console.error("Error saving summary file:", error);
     }
   }
-}
-
-async function processBatch(batch: any[], request: Request, body: any) {
-  return Promise.all(
-    batch.map(async (result) => {
-      try {
-        const cleanedNotes = result.notes?.map((note: any) => ({
-          type: note.type,
-          createdAt: note.createdAt,
-          content: note.content
-            .replace(/<[^>]*>/g, '')
-            .substring(0, 500)
-        })) || [];
-
-        const summaryResponse = await fetch(`${request.url.split('/api/')[0]}/api/openai-summary`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            person: {
-              ...result,
-              notes: cleanedNotes
-            },
-            originalQuery: body.originalQuery,
-            keywords: body.keywords
-          })
-        });
-
-        if (summaryResponse.ok) {
-          const summaryData = await summaryResponse.json();
-          await saveSummaryToFile(result.id, summaryData);
-          result.shortSummary = summaryData.shortSummary;
-          result.longSummary = summaryData.longSummary;
-        }
-
-        result.notes = result.notes?.map((note: any) => ({
-          id: note.id,
-          type: note.type,
-          createdAt: note.createdAt
-        })) || [];
-
-        return result;
-      } catch (error) {
-        console.error(`Error processing summary for person ${result.id}:`, error);
-        return result;
-      }
-    })
-  );
 }
 
 export async function POST(request: Request) {
@@ -96,14 +60,19 @@ export async function POST(request: Request) {
     console.log(`Search keywords:`, keywords);
 
     // Flatten keywords object into array while preserving multi-word keywords
-    const keywordsList = Object.values(keywords).flat().map(kw => kw.trim());
+    const keywordsList = Object.values(keywords as Keywords)
+      .flat()
+      .map((kw: string) => kw.trim());
 
     // Track frequency of each person
-    const personFrequency = new Map<string, { 
-      count: number; 
-      person: any;
-      matchedKeywords: Set<string>;
-    }>();
+    const personFrequency = new Map<
+      string,
+      {
+        count: number;
+        person: Person;
+        matchedKeywords: Set<string>;
+      }
+    >();
 
     // Make requests for each keyword, getting first two pages
     const searchPromises = keywordsList.flatMap((keyword: string) => {
@@ -135,26 +104,30 @@ export async function POST(request: Request) {
 
     // Process results and count frequencies
     results.forEach(({ keyword, data }) => {
-      (data.peopleSearch || []).forEach((person: any) => {
+      (data.peopleSearch || []).forEach((person: Person) => {
         if (personFrequency.has(person.id)) {
           const entry = personFrequency.get(person.id)!;
           entry.count++;
           // Only add the exact keyword that matched
-          if (person.name.toLowerCase().includes(keyword.toLowerCase()) ||
-              JSON.stringify(person).toLowerCase().includes(keyword.toLowerCase())) {
+          if (
+            person.name.toLowerCase().includes(keyword.toLowerCase()) ||
+            JSON.stringify(person).toLowerCase().includes(keyword.toLowerCase())
+          ) {
             entry.matchedKeywords.add(keyword);
           }
         } else {
           // Check if this keyword actually matches before adding it
           const matchedKeywords = new Set<string>();
-          if (person.name.toLowerCase().includes(keyword.toLowerCase()) ||
-              JSON.stringify(person).toLowerCase().includes(keyword.toLowerCase())) {
+          if (
+            person.name.toLowerCase().includes(keyword.toLowerCase()) ||
+            JSON.stringify(person).toLowerCase().includes(keyword.toLowerCase())
+          ) {
             matchedKeywords.add(keyword);
           }
-          personFrequency.set(person.id, { 
-            count: 1, 
+          personFrequency.set(person.id, {
+            count: 1,
             person,
-            matchedKeywords
+            matchedKeywords,
           });
         }
       });
@@ -166,7 +139,7 @@ export async function POST(request: Request) {
       .map(({ person, count, matchedKeywords }) => ({
         ...person,
         matchScore: count,
-        matchedKeywords: Array.from(matchedKeywords)
+        matchedKeywords: Array.from(matchedKeywords),
       }));
 
     const resultsToProcess = allResults.slice(0, MAX_RESULTS);
@@ -179,80 +152,86 @@ export async function POST(request: Request) {
           controller.enqueue(
             new TextEncoder().encode(
               JSON.stringify({
-                type: 'initial',
+                type: "initial",
                 peopleSearch: allResults,
                 total: allResults.length,
                 limitedTo: MAX_RESULTS,
-                processingCount: resultsToProcess.length
-              }) + '\n'
+                processingCount: resultsToProcess.length,
+              }) + "\n"
             )
           );
 
           // Process top results
           for (const result of resultsToProcess) {
             // Fetch notes
-            const notesResponse = await fetch(`${request.url.split('/api/')[0]}/api/clockwork-notes`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                personId: result.id,
-                credentials 
-              })
-            });
-            
+            const notesResponse = await fetch(
+              `${request.url.split("/api/")[0]}/api/clockwork-notes`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  personId: result.id,
+                  credentials,
+                }),
+              }
+            );
+
             if (notesResponse.ok) {
               const notesData = await notesResponse.json();
               result.notes = notesData.notes || [];
-              
+
               // Send notes update
               controller.enqueue(
                 new TextEncoder().encode(
                   JSON.stringify({
-                    type: 'notes',
+                    type: "notes",
                     personId: result.id,
-                    notes: result.notes
-                  }) + '\n'
+                    notes: result.notes,
+                  }) + "\n"
                 )
               );
             }
 
             // Generate summaries
-            const summaryResponse = await fetch(`${request.url.split('/api/')[0]}/api/openai-summary`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                person: result,
-                originalQuery: body.originalQuery,
-                keywords: keywordsList
-              })
-            });
+            const summaryResponse = await fetch(
+              `${request.url.split("/api/")[0]}/api/openai-summary`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  person: result,
+                  originalQuery: body.originalQuery,
+                  keywords: keywordsList,
+                }),
+              }
+            );
 
             if (summaryResponse.ok) {
               const summaryData = await summaryResponse.json();
               await saveSummaryToFile(result.id, summaryData);
-              
+
               // Send summary update
               controller.enqueue(
                 new TextEncoder().encode(
                   JSON.stringify({
-                    type: 'summary',
+                    type: "summary",
                     personId: result.id,
-                    ...summaryData
-                  }) + '\n'
+                    ...summaryData,
+                  }) + "\n"
                 )
               );
             }
           }
 
           controller.close();
-        }
+        },
       }),
       {
         headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive'
-        }
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
       }
     );
 

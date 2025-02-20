@@ -8,9 +8,9 @@ import { CandidateCard } from "@/components/candidate-card";
 import { ProfileDrawer } from "@/components/profile-drawer";
 
 export default function Home() {
-  type SearchStatus = 
+  type SearchStatus =
     | "generating-criteria"
-    | "searching-clockwork" 
+    | "searching-clockwork"
     | "fetching-notes"
     | "summarizing"
     | "complete"
@@ -29,7 +29,10 @@ export default function Home() {
   const [currentResults, setCurrentResults] = useState<any[]>([]);
   const [selectedPerson, setSelectedPerson] = useState<any>(null);
 
-  const handleSearch = async (query: string, existingKeywords?: Record<string, string[]>) => {
+  const handleSearch = async (
+    query: string,
+    existingKeywords?: Record<string, string[]>
+  ) => {
     const timestamp = Date.now();
     setSearchHistory((prev) => [
       { query, timestamp, status: "generating-criteria" },
@@ -61,33 +64,33 @@ export default function Home() {
       });
 
       if (!clockworkResponse.ok) {
-        throw new Error('Failed to fetch candidates');
+        throw new Error("Failed to fetch candidates");
       }
 
       const reader = clockworkResponse.body?.getReader();
       if (!reader) {
-        throw new Error('No response body');
+        throw new Error("No response body");
       }
 
       const decoder = new TextDecoder();
-      let buffer = '';
+      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
 
         for (const line of lines) {
           if (!line.trim()) continue;
-          
+
           try {
             const update = JSON.parse(line);
-            
+
             switch (update.type) {
-              case 'initial':
+              case "initial":
                 setCurrentResults(update.peopleSearch);
                 setSearchHistory((prev) =>
                   prev.map((item) =>
@@ -97,18 +100,26 @@ export default function Home() {
                           keywords,
                           resultCount: update.peopleSearch.length,
                           results: update.peopleSearch,
-                          status: "fetching-notes"
+                          status: "fetching-notes",
                         }
                       : item
                   )
                 );
                 break;
 
-              case 'notes':
-                setCurrentResults(prev =>
-                  prev.map(person =>
+              case "notes":
+                setCurrentResults((prev) =>
+                  prev.map((person) =>
                     person.id === update.personId
-                      ? { ...person, notes: update.notes }
+                      ? {
+                          ...person,
+                          notes: update.notes?.map((note: any) => ({
+                            ...note,
+                            content: note.content
+                              ?.replace(/<[^>]*>/g, "") // Remove HTML tags
+                              ?.substring(0, 500), // Limit content length
+                          })),
+                        }
                       : person
                   )
                 );
@@ -121,14 +132,14 @@ export default function Home() {
                 );
                 break;
 
-              case 'summary':
-                setCurrentResults(prev =>
-                  prev.map(person =>
+              case "summary":
+                setCurrentResults((prev) =>
+                  prev.map((person) =>
                     person.id === update.personId
                       ? {
                           ...person,
                           shortSummary: update.shortSummary,
-                          longSummary: update.longSummary
+                          longSummary: update.longSummary,
                         }
                       : person
                   )
@@ -136,7 +147,7 @@ export default function Home() {
                 break;
             }
           } catch (e) {
-            console.error('Error parsing update:', e);
+            console.error("Error parsing update:", e);
           }
         }
       }
@@ -144,9 +155,7 @@ export default function Home() {
       // Mark search as complete
       setSearchHistory((prev) =>
         prev.map((item) =>
-          item.timestamp === timestamp
-            ? { ...item, status: "complete" }
-            : item
+          item.timestamp === timestamp ? { ...item, status: "complete" } : item
         )
       );
     } catch (error) {
@@ -173,13 +182,13 @@ export default function Home() {
                 const keywords = searchHistory[0]?.keywords
                   ? Object.values(searchHistory[0].keywords).flat()
                   : [];
-                
+
                 return (
                   <CandidateCard
                     key={person.id}
                     name={person.name}
-                    currentPosition={person.positions?.[0]?.title || 'Unknown'}
-                    location={person.preferredAddress || 'Unknown'}
+                    currentPosition={person.positions?.[0]?.title || "Unknown"}
+                    location={person.preferredAddress || "Unknown"}
                     matchScore={person.matchScore}
                     person={person}
                     keywords={keywords}
@@ -196,7 +205,7 @@ export default function Home() {
           <SearchBar onSearch={handleSearch} />
         </main>
       )}
-      <ProfileDrawer 
+      <ProfileDrawer
         person={selectedPerson}
         open={!!selectedPerson}
         onClose={() => setSelectedPerson(null)}
