@@ -160,11 +160,11 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
           )}
 
           {/* Notes Card */}
-          {person.notes && person.notes.length > 0 && (
-            <div className="p-4 border rounded-lg space-y-4">
-              <h3 className="font-semibold text-lg">Notes</h3>
-              <div className="space-y-4">
-                {person.notes.map((note: any) => (
+          <div className="p-4 border rounded-lg space-y-4">
+            <h3 className="font-semibold text-lg">Notes</h3>
+            <div className="space-y-4">
+              {person.notes && person.notes.length > 0 ? (
+                person.notes.map((note: any) => (
                   <div key={note.id} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <div>
@@ -196,10 +196,12 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
+                ))
+              ) : (
+                <div className="text-sm text-muted-foreground">No notes available</div>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Education Card */}
           {person.schools && person.schools.length > 0 && (
