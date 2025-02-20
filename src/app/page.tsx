@@ -8,12 +8,7 @@ export default function Home() {
   interface SearchHistoryItem {
     query: string;
     timestamp: number;
-    structuredQuery?: {
-      role?: string;
-      skills?: string[];
-      location?: string;
-      experience?: string;
-    };
+    structuredQuery?: string;
     status: 'pending' | 'complete' | 'error';
   }
 
