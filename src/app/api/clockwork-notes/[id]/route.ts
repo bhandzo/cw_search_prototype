@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const credentialsCookie = cookies().get("credentials");
+    const credentialsCookie = (await cookies()).get("credentials");
     if (!credentialsCookie) {
       throw new Error("No credentials found");
     }

@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     const { keywords } = body;
 
     // Get credentials from cookie instead of request body
-    const credentialsCookie = cookies().get("credentials");
+    const credentialsCookie = (await cookies()).get("credentials");
     if (!credentialsCookie) {
       throw new Error("No credentials found");
     }

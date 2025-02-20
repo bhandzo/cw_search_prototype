@@ -7,7 +7,7 @@ const COOKIE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 // Get credentials
 export async function GET() {
-  const credentialsCookie = cookies().get(COOKIE_NAME);
+  const credentialsCookie = (await cookies()).get(COOKIE_NAME);
   if (!credentialsCookie) {
     return NextResponse.json({ error: "No credentials found" }, { status: 404 });
   }
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const credentials: Credentials = await request.json();
     
     // Set cookie with credentials, httpOnly for security
-    cookies().set({
+    (await cookies()).set({
       name: COOKIE_NAME,
       value: encodeURIComponent(JSON.stringify(credentials)),
       httpOnly: true,
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
 export async function DELETE() {
   try {
     // Delete the credentials cookie
-    cookies().delete(COOKIE_NAME);
+    (await cookies()).delete(COOKIE_NAME);
     return NextResponse.json({ status: "success" });
   } catch {
     return NextResponse.json({ error: "Failed to delete credentials" }, { status: 500 });
