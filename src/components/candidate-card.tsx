@@ -1,11 +1,13 @@
 "use client";
 
+import { Person } from "@/types/clockwork";
+
 interface CandidateCardProps {
   name: string;
   currentPosition: string;
   location: string;
   matchScore?: number;
-  person: any;
+  person: Person;
   keywords: string[];
   onSelect: (person: any) => void;
   summarizing: boolean;

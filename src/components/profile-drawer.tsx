@@ -5,25 +5,10 @@ import { format } from "date-fns";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface Position {
-  title: string;
-  companyName: string;
-  startDate: string;
-  endDate?: string;
-  type: string;
-  jobDuration?: number;
-}
-
-interface School {
-  name: string;
-  degree?: string;
-  fieldOfStudy?: string;
-  startDate?: string;
-  endDate?: string;
-}
+import { Person, Position, School } from "@/types/clockwork";
 
 interface ProfileDrawerProps {
-  person: any;
+  person: Person | null;
   open: boolean;
   onClose: () => void;
 }

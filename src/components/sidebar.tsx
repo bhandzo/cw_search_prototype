@@ -3,16 +3,13 @@
 import { SearchBar } from "@/components/search-bar";
 import { EditableKeywords } from "@/components/editable-keywords";
 
+import { Person } from "@/types/clockwork";
+
 interface SearchHistoryItem {
   query: string;
   timestamp: number;
   keywords?: Record<string, string[]>;
-  candidates?: Array<{
-    id: string;
-    name: string;
-    currentPosition: string;
-    location: string;
-  }>;
+  candidates?: Person[];
   status: 'pending' | 'complete' | 'error';
 }
 

@@ -9,12 +9,7 @@ type SummaryData = object; // or use `unknown` if you prefer
 // Define a type for the keywords object
 type Keywords = Record<string, string[]>;
 
-// Define a type for the person object
-interface Person {
-  id: string;
-  name: string;
-  // Add other properties of the person object as needed
-}
+import { Person } from "@/types/clockwork";
 
 async function saveSummaryToFile(personId: string, summaryData: SummaryData) {
   if (process.env.NODE_ENV === "development") {
