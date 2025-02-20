@@ -41,7 +41,17 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
     >
       <div className="sticky top-0 bg-background border-b z-10">
         <div className="flex justify-between items-center p-4">
-          <h2 className="text-xl font-semibold">{person.name}</h2>
+          <div className="flex flex-col">
+            <h2 className="text-xl font-semibold">{person.name}</h2>
+            <a 
+              href={`https://${person.firmSlug}.clockworkrecruiting.com/firm/people/${person.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              View in Clockwork
+            </a>
+          </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -49,6 +59,17 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
       </div>
 
       <div className="p-6 space-y-6">
+        {/* Tags */}
+        {person.tags && person.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {person.tags.map((tag: { name: string }) => (
+              <span key={tag.name} className="px-2 py-1 bg-secondary rounded text-sm">
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Basic Information Card */}
         <div className="space-y-4">
           <div className="p-4 border rounded-lg space-y-2">
@@ -74,7 +95,9 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
               {person.preferredEmailAddress && (
                 <div>
                   <p className="text-sm text-muted-foreground">Email</p>
-                  <p>{person.preferredEmailAddress}</p>
+                  <a href={`mailto:${person.preferredEmailAddress}`} className="text-blue-600 hover:underline">
+                    {person.preferredEmailAddress}
+                  </a>
                 </div>
               )}
               {person.preferredPhoneNumber && (
@@ -94,7 +117,14 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
                 {person.positions.map((position: Position, index: number) => (
                   <div key={`${position.title}-${position.startDate}-${index}`} className="border-l-2 pl-4 space-y-1">
                     <h4 className="font-medium">{position.title}</h4>
-                    <p className="text-muted-foreground">{position.companyName}</p>
+                    <a 
+                      href={`https://${person.firmSlug}.clockworkrecruiting.com/firm/companies#${position.companyId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {position.companyName}
+                    </a>
                     <p className="text-sm text-muted-foreground">
                       {formatDate(position.startDate)} - {position.endDate ? formatDate(position.endDate) : 'Present'}
                       {position.jobDuration !== undefined && (
@@ -134,16 +164,6 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
             </div>
           )}
 
-          {/* Tags */}
-          {person.tags && person.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {person.tags.map((tag: { name: string }) => (
-                <span key={tag.name} className="px-2 py-1 bg-secondary rounded text-sm">
-                  {tag.name}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
