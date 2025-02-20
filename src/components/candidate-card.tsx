@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { ProfileDialog } from "./profile-dialog";
+
 interface CandidateCardProps {
   name: string;
   currentPosition: string;
@@ -15,8 +20,14 @@ export function CandidateCard({
   person,
   keywords 
 }: CandidateCardProps) {
+  const [showProfile, setShowProfile] = useState(false);
+
   return (
-    <div className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white">
+    <>
+      <div 
+        className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white cursor-pointer"
+        onClick={() => setShowProfile(true)}
+      >
       <div className="flex justify-between items-start">
         <h3 className="font-semibold text-lg">{name}</h3>
         {matchScore && (
@@ -59,6 +70,12 @@ export function CandidateCard({
           </div>
         </div>
       )}
-    </div>
+      </div>
+      <ProfileDialog 
+        person={person}
+        open={showProfile}
+        onOpenChange={setShowProfile}
+      />
+    </>
   );
 }
