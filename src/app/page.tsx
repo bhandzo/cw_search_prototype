@@ -13,8 +13,8 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar searchHistory={searchHistory} />
-      <main className="flex-1 flex flex-col items-center p-24">
+      {searchHistory.length > 0 && <Sidebar searchHistory={searchHistory} />}
+      <main className={`flex-1 flex flex-col ${searchHistory.length === 0 ? 'items-center justify-center' : 'items-center p-24'}`}>
         <SearchBar onSearch={handleSearch} />
       </main>
     </div>

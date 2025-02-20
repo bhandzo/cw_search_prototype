@@ -20,7 +20,7 @@ export function SearchBar({ onSearch }: SearchBarProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl">
+    <form onSubmit={handleSubmit} className="w-full max-w-2xl px-4">
       <div className="flex gap-2">
         <Input
           type="text"
