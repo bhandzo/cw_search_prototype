@@ -3,6 +3,7 @@ export interface Credentials {
   firmApiKey: string;
   clockworkAuthKey: string;
   openaiApiKey?: string;
+  maxCandidates: number;
 }
 
 export interface SettingsFormData {
@@ -11,4 +12,5 @@ export interface SettingsFormData {
   clockworkApiKey: string;
   clockworkApiSecret: string;
   openaiApiKey: string;
+  maxCandidates: number;
 }
