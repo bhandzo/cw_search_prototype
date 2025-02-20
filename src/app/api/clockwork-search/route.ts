@@ -170,50 +170,91 @@ export async function POST(request: Request) {
       }))
       .slice(0, MAX_RESULTS);
 
-    // Enrich results with notes and summaries
-    const enrichedResults = [];
-    for (const result of combinedPeopleSearch) {
-      // Fetch notes
-      const notesResponse = await fetch(`${request.url.split('/api/')[0]}/api/clockwork-notes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          personId: result.id,
-          credentials 
-        })
-      });
-      
-      if (notesResponse.ok) {
-        const notesData = await notesResponse.json();
-        result.notes = notesData.notes || [];
+    // Return initial results immediately
+    const response = new NextResponse(
+      new ReadableStream({
+        async start(controller) {
+          // Send initial results
+          controller.enqueue(
+            new TextEncoder().encode(
+              JSON.stringify({
+                type: 'initial',
+                peopleSearch: combinedPeopleSearch,
+                total: combinedPeopleSearch.length,
+                limitedTo: MAX_RESULTS
+              }) + '\n'
+            )
+          );
+
+          // Process each result
+          for (const result of combinedPeopleSearch) {
+            // Fetch notes
+            const notesResponse = await fetch(`${request.url.split('/api/')[0]}/api/clockwork-notes`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                personId: result.id,
+                credentials 
+              })
+            });
+            
+            if (notesResponse.ok) {
+              const notesData = await notesResponse.json();
+              result.notes = notesData.notes || [];
+              
+              // Send notes update
+              controller.enqueue(
+                new TextEncoder().encode(
+                  JSON.stringify({
+                    type: 'notes',
+                    personId: result.id,
+                    notes: result.notes
+                  }) + '\n'
+                )
+              );
+            }
+
+            // Generate summaries
+            const summaryResponse = await fetch(`${request.url.split('/api/')[0]}/api/openai-summary`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                person: result,
+                originalQuery: body.originalQuery,
+                keywords: keywordsList
+              })
+            });
+
+            if (summaryResponse.ok) {
+              const summaryData = await summaryResponse.json();
+              await saveSummaryToFile(result.id, summaryData);
+              
+              // Send summary update
+              controller.enqueue(
+                new TextEncoder().encode(
+                  JSON.stringify({
+                    type: 'summary',
+                    personId: result.id,
+                    ...summaryData
+                  }) + '\n'
+                )
+              );
+            }
+          }
+
+          controller.close();
+        }
+      }),
+      {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive'
+        }
       }
+    );
 
-      // Generate summaries
-      const summaryResponse = await fetch(`${request.url.split('/api/')[0]}/api/openai-summary`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          person: result,
-          originalQuery: body.originalQuery,
-          keywords: keywordsList
-        })
-      });
-
-      if (summaryResponse.ok) {
-        const summaryData = await summaryResponse.json();
-        await saveSummaryToFile(result.id, summaryData);
-        result.shortSummary = summaryData.shortSummary;
-        result.longSummary = summaryData.longSummary;
-      }
-
-      enrichedResults.push(result);
-    }
-
-    return NextResponse.json({ 
-      peopleSearch: enrichedResults,
-      total: combinedPeopleSearch.length,
-      limitedTo: MAX_RESULTS
-    });
+    return response;
   } catch (error) {
     console.error("Clockwork API error:", error);
     return NextResponse.json(
