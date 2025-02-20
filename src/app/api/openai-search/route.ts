@@ -5,8 +5,12 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-function isFetchError(error: any): error is { response: Response } {
-  return error && error.response && error.response instanceof Response;
+function isFetchError(error: unknown): error is { response: Response } {
+  return (
+    error instanceof Error &&
+    "response" in error &&
+    error.response instanceof Response
+  );
 }
 
 export async function POST(request: Request) {
@@ -61,8 +65,11 @@ Return only valid JSON without any extra text or explanations.`,
       temperature: 0.1,
     });
 
-    console.log("OpenAI API full response:", JSON.stringify(completion, null, 2));
-    
+    console.log(
+      "OpenAI API full response:",
+      JSON.stringify(completion, null, 2)
+    );
+
     // Validate response structure
     if (!completion.choices || completion.choices.length === 0) {
       console.error("No choices in completion response");
@@ -107,7 +114,7 @@ Return only valid JSON without any extra text or explanations.`,
         choicesLength: completion.choices?.length,
         hasFirstChoice: !!firstChoice,
         hasMessage: !!firstChoice?.message,
-        hasContent: !!messageContent
+        hasContent: !!messageContent,
       });
       throw new Error("Failed to generate structured query");
     }
