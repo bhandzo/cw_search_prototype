@@ -123,7 +123,7 @@ export function SettingsDialog() {
       localStorage.setItem("credentials", JSON.stringify(credentialsToSave));
       setOpen(false);
     } catch (error) {
-      setError(error.message);
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsValidating(false);
     }

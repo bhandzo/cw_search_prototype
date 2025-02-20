@@ -7,7 +7,7 @@ import { SearchHistoryItem } from "@/types/search";
 
 interface SidebarProps {
   searchHistory: SearchHistoryItem[];
-  onSearch: (query: string) => void;
+  onSearch: (query: string, existingKeywords?: Record<string, string[]>) => void;
 }
 
 export function Sidebar({ searchHistory, onSearch }: SidebarProps) {

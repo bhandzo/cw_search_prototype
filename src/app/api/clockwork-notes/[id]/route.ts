@@ -32,7 +32,7 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching note:", error);
     return NextResponse.json(
-      { error: "Failed to fetch note content" },
+      { notes: [], error: "Failed to fetch note content" },
       { status: 500 }
     );
   }
