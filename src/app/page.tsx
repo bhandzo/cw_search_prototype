@@ -166,6 +166,7 @@ export default function Home() {
                     person={person}
                     keywords={keywords}
                     onSelect={setSelectedPerson}
+                    summarizing={searchHistory[0].status === "summarizing" && !person.shortSummary}
                   />
                 );
               })}
