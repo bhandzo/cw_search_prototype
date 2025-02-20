@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Person, Note } from "@/types/clockwork";
-import { SearchStatus, SearchHistoryItem } from "@/types/search";
+import { SearchHistoryItem } from "@/types/search";
 import { LoadingStatus } from "@/components/loading-status";
 import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
