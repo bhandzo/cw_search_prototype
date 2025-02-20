@@ -33,11 +33,24 @@ export function SettingsDialog() {
     if (stored) {
       const parsedCredentials = JSON.parse(stored);
       setCredentials(parsedCredentials);
+
+      // Decode the clockwork auth key to get back the original API key and secret
+      let clockworkApiKey = '';
+      let clockworkApiSecret = '';
+      if (parsedCredentials.clockworkAuthKey) {
+        try {
+          const decoded = atob(parsedCredentials.clockworkAuthKey);
+          [clockworkApiKey, clockworkApiSecret] = decoded.split(':');
+        } catch (e) {
+          console.error('Error decoding clockwork auth key:', e);
+        }
+      }
+
       setFormData({
         firmSlug: parsedCredentials.firmSlug || '',
         firmApiKey: parsedCredentials.firmApiKey || '',
-        clockworkApiKey: '', 
-        clockworkApiSecret: '',
+        clockworkApiKey: clockworkApiKey,
+        clockworkApiSecret: clockworkApiSecret,
         openaiApiKey: parsedCredentials.openaiApiKey || ''
       });
     } else if (process.env.NODE_ENV === 'development') {
