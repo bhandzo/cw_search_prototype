@@ -91,8 +91,8 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
             <div className="p-4 border rounded-lg space-y-4">
               <h3 className="font-semibold text-lg">Work History</h3>
               <div className="space-y-6">
-                {person.positions.map((position: Position) => (
-                  <div key={position.title + position.startDate} className="border-l-2 pl-4 space-y-1">
+                {person.positions.map((position: Position, index: number) => (
+                  <div key={`${position.title}-${position.startDate}-${index}`} className="border-l-2 pl-4 space-y-1">
                     <h4 className="font-medium">{position.title}</h4>
                     <p className="text-muted-foreground">{position.companyName}</p>
                     <p className="text-sm text-muted-foreground">
