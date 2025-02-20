@@ -125,9 +125,19 @@ export function SettingsDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog modal={true} open={open} onOpenChange={(newOpen) => {
+      setOpen(newOpen);
+      // If credentials don't exist and we're not in dev mode, keep dialog open
+      if (!localStorage.getItem("credentials") && process.env.NODE_ENV !== 'development') {
+        setOpen(true);
+      }
+    }}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => setOpen(true)}
+        >
           <Settings className="h-5 w-5" />
         </Button>
       </DialogTrigger>
