@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ProfileDialog } from "./profile-dialog";
+import { ProfileDrawer } from "./profile-drawer";
 
 interface CandidateCardProps {
   name: string;
@@ -71,10 +71,10 @@ export function CandidateCard({
         </div>
       )}
       </div>
-      <ProfileDialog 
+      <ProfileDrawer 
         person={person}
         open={showProfile}
-        onOpenChange={setShowProfile}
+        onClose={() => setShowProfile(false)}
       />
     </>
   );
