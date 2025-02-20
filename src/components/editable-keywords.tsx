@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface EditableKeywordsProps {
   keywords: Record<string, string[]>;
@@ -9,8 +10,14 @@ interface EditableKeywordsProps {
 }
 
 export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) {
+  const [isEditing, setIsEditing] = useState(false);
   const [editingKeyword, setEditingKeyword] = useState<{category: string, index: number} | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [editedKeywords, setEditedKeywords] = useState(keywords);
+
+  useEffect(() => {
+    setEditedKeywords(keywords);
+  }, [keywords]);
 
   const handleEdit = (category: string, index: number, value: string) => {
     setEditingKeyword({ category, index });
@@ -20,24 +27,39 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
   const handleSave = () => {
     if (!editingKeyword) return;
     
-    const newKeywords = {...keywords};
+    const newKeywords = {...editedKeywords};
     newKeywords[editingKeyword.category][editingKeyword.index] = editValue.trim();
-    onUpdate(newKeywords);
+    setEditedKeywords(newKeywords);
     setEditingKeyword(null);
   };
 
   const handleRemove = (category: string, index: number) => {
-    const newKeywords = {...keywords};
+    const newKeywords = {...editedKeywords};
     newKeywords[category] = newKeywords[category].filter((_, i) => i !== index);
     if (newKeywords[category].length === 0) {
       delete newKeywords[category];
     }
-    onUpdate(newKeywords);
+    setEditedKeywords(newKeywords);
+  };
+
+  const handleUpdate = () => {
+    onUpdate(editedKeywords);
+    setIsEditing(false);
   };
 
   return (
-    <div className="space-y-2">
-      {Object.entries(keywords).map(([category, terms]) => (
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <h3 className="font-medium">Search Keywords</h3>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsEditing(!isEditing)}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+      </div>
+      {Object.entries(editedKeywords).map(([category, terms]) => (
         <div key={category} className="space-y-1">
           <div className="font-medium text-sm">{category}:</div>
           <div className="flex flex-wrap gap-2">
@@ -77,6 +99,14 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
           </div>
         </div>
       ))}
+      {isEditing && (
+        <Button 
+          className="w-full mt-4" 
+          onClick={handleUpdate}
+        >
+          Update Search
+        </Button>
+      )}
     </div>
   );
 }

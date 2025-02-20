@@ -19,7 +19,7 @@ export default function Home() {
   const [currentResults, setCurrentResults] = useState<any[]>([]);
   const [selectedPerson, setSelectedPerson] = useState<any>(null);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = async (query: string, existingKeywords?: Record<string, string[]>) => {
     const timestamp = Date.now();
     setSearchHistory((prev) => [
       ...prev,
@@ -34,8 +34,13 @@ export default function Home() {
         body: JSON.stringify({ userInput: query }),
       });
 
-      const { structuredQuery } = await openaiResponse.json();
-      const keywords = JSON.parse(structuredQuery);
+      let keywords;
+      if (existingKeywords) {
+        keywords = existingKeywords;
+      } else {
+        const { structuredQuery } = await openaiResponse.json();
+        keywords = JSON.parse(structuredQuery);
+      }
 
       // Get candidates from Clockwork
       const clockworkResponse = await fetch("/api/clockwork-search", {
