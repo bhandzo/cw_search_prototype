@@ -4,6 +4,7 @@ import { useState } from "react";
 import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
 import { CandidateCard } from "@/components/candidate-card";
+import { ProfileDrawer } from "@/components/profile-drawer";
 
 export default function Home() {
   interface SearchHistoryItem {
