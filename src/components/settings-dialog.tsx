@@ -28,6 +28,8 @@ export function SettingsDialog() {
     firmSlug: "",
     firmApiKey: "",
     clockworkAuthKey: "",
+    openaiApiKey: "",
+    maxCandidates: 5
   });
   useEffect(() => {
     const stored = localStorage.getItem("credentials");
@@ -125,7 +127,7 @@ export function SettingsDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 
