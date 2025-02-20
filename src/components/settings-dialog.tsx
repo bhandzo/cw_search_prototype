@@ -60,6 +60,7 @@ export function SettingsDialog() {
     
     // Create base64 encoded auth key from API key and secret
     const clockworkAuthKey = btoa(`${formData.clockworkApiKey}:${formData.clockworkApiSecret}`);
+    console.log('Base64 encoded auth key:', clockworkAuthKey);
     
     const credentialsToSave = {
       firmSlug: formData.firmSlug,
@@ -117,7 +118,6 @@ export function SettingsDialog() {
             <Label htmlFor="firmApiKey">Firm API Key</Label>
             <Input
               id="firmApiKey"
-              type="password"
               value={formData.firmApiKey}
               onChange={(e) =>
                 setFormData({ ...formData, firmApiKey: e.target.value })
@@ -129,7 +129,6 @@ export function SettingsDialog() {
             <Label htmlFor="clockworkApiKey">Clockwork API Key</Label>
             <Input
               id="clockworkApiKey"
-              type="password"
               value={formData.clockworkApiKey}
               onChange={(e) =>
                 setFormData({ ...formData, clockworkApiKey: e.target.value })
@@ -141,7 +140,6 @@ export function SettingsDialog() {
             <Label htmlFor="clockworkApiSecret">Clockwork API Secret</Label>
             <Input
               id="clockworkApiSecret"
-              type="password"
               value={formData.clockworkApiSecret}
               onChange={(e) =>
                 setFormData({
