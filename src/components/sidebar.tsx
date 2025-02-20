@@ -15,12 +15,16 @@ interface SearchHistoryItem {
 
 interface SidebarProps {
   searchHistory: SearchHistoryItem[];
+  onSearch: (query: string) => void;
 }
 
-export function Sidebar({ searchHistory }: SidebarProps) {
+export function Sidebar({ searchHistory, onSearch }: SidebarProps) {
   return (
-    <div className="w-80 h-screen border-r p-4 space-y-4">
-      <h2 className="font-semibold">Search History</h2>
+    <div className="w-80 h-screen border-r p-4 space-y-4 overflow-y-auto">
+      <div className="space-y-4">
+        <SearchBar onSearch={onSearch} />
+        <h2 className="font-semibold">Search History</h2>
+      </div>
       <div className="space-y-2">
         {searchHistory.map((item) => (
           <div

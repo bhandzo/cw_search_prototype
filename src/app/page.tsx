@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
+import { CandidateCard } from "@/components/candidate-card";
 
 export default function Home() {
   interface SearchHistoryItem {
@@ -79,16 +80,27 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen">
-      {searchHistory.length > 0 && <Sidebar searchHistory={searchHistory} />}
-      <main
-        className={`flex-1 flex flex-col ${
-          searchHistory.length === 0
-            ? "items-center justify-center"
-            : "items-center p-24"
-        }`}
-      >
-        <SearchBar onSearch={handleSearch} />
-      </main>
+      {searchHistory.length > 0 ? (
+        <>
+          <Sidebar searchHistory={searchHistory} onSearch={handleSearch} />
+          <main className="flex-1 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {searchHistory[0]?.candidates?.map((candidate) => (
+                <CandidateCard
+                  key={candidate.id}
+                  name={candidate.name}
+                  currentPosition={candidate.currentPosition}
+                  location={candidate.location}
+                />
+              ))}
+            </div>
+          </main>
+        </>
+      ) : (
+        <main className="flex-1 flex items-center justify-center">
+          <SearchBar onSearch={handleSearch} />
+        </main>
+      )}
     </div>
   );
 }
