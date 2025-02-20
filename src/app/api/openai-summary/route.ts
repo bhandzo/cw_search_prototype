@@ -1,8 +1,29 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { cookies } from "next/headers";
+
+async function getOpenAIKey() {
+  // Try environment variable first
+  if (process.env.OPENAI_API_KEY) {
+    return process.env.OPENAI_API_KEY;
+  }
+
+  // Fall back to credentials cookie
+  const credentialsCookie = (await cookies()).get("credentials");
+  if (!credentialsCookie) {
+    throw new Error("No OpenAI API key found - please configure in settings");
+  }
+  
+  const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
+  if (!credentials.openaiApiKey) {
+    throw new Error("No OpenAI API key found - please configure in settings");
+  }
+  
+  return credentials.openaiApiKey;
+}
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: await getOpenAIKey(),
 });
 
 export async function POST(request: Request) {
