@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+import { Note } from "@/types/clockwork";
+
+interface NoteResponse extends Note {
+  content: string;
+}
 
 export async function GET(
   request: Request,

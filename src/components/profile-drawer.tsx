@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { Person, Position, School } from "@/types/clockwork";
+import { Person, Position, School, Note } from "@/types/clockwork";
 
 interface ProfileDrawerProps {
   person: Person | null;
@@ -149,7 +149,7 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
             <h3 className="font-semibold text-lg">Notes</h3>
             <div className="space-y-4">
               {person.notes && person.notes.length > 0 ? (
-                person.notes.map((note: any) => (
+                person.notes.map((note: Note) => (
                   <div key={note.id} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <div>
