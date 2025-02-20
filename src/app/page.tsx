@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Person } from "@/types/clockwork";
 import { LoadingStatus } from "@/components/loading-status";
 import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
@@ -24,8 +25,6 @@ export default function Home() {
     status: SearchStatus;
     results?: Person[];
   }
-
-  import { Person } from "@/types/clockwork";
 
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [currentResults, setCurrentResults] = useState<Person[]>([]);
