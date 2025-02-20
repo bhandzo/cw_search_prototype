@@ -25,13 +25,6 @@ export function SettingsDialog() {
     maxCandidates: 5,
   });
 
-  const [credentials, setCredentials] = useState<Credentials>({
-    firmSlug: "",
-    firmApiKey: "",
-    clockworkAuthKey: "",
-    openaiApiKey: "",
-    maxCandidates: 5
-  });
   useEffect(() => {
     const stored = localStorage.getItem("credentials");
     if (stored) {
@@ -207,7 +200,7 @@ export function SettingsDialog() {
               type="number"
               min="1"
               max="20"
-              value={formData.maxCandidates}
+              value={formData.maxCandidates.toString()}
               onChange={(e) =>
                 setFormData({
                   ...formData,
