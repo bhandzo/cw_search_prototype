@@ -5,6 +5,7 @@ import path from "path";
 import { Person } from "@/types/clockwork";
 
 type SummaryData = Record<string, unknown>;
+type Keywords = Record<string, string[]>;
 
 async function saveSummaryToFile(personId: string, summaryData: SummaryData) {
   if (process.env.NODE_ENV === "development") {
@@ -61,9 +62,9 @@ export async function POST(request: Request) {
     console.log(`Search keywords:`, keywords);
 
     // Flatten keywords object into array while preserving multi-word keywords
-    const keywordsList = Object.values(keywords as Keywords)
+    const keywordsList = Object.values(keywords)
       .flat()
-      .map((kw: string) => kw.trim());
+      .map((kw) => (typeof kw === 'string' ? kw.trim() : ''));
 
     // Track frequency of each person
     const personFrequency = new Map<
