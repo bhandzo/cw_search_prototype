@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import { Credentials } from "@/types/settings";
 
 export async function GET(
