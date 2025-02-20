@@ -12,24 +12,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Settings } from "lucide-react";
-
-interface Credentials {
-  firmSlug: string;
-  firmApiKey: string;
-  clockworkAuthKey: string;
-  openaiApiKey?: string;
-}
-
-interface FormData {
-  firmSlug: string;
-  firmApiKey: string;
-  clockworkApiKey: string;
-  clockworkApiSecret: string;
-  openaiApiKey: string;
-}
+import { Credentials, SettingsFormData } from "@/types/settings";
 
 export function SettingsDialog() {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<SettingsFormData>({
     firmSlug: "",
     firmApiKey: "",
     clockworkApiKey: "",
@@ -42,8 +28,6 @@ export function SettingsDialog() {
     firmApiKey: "",
     clockworkAuthKey: "",
   });
-  const [open, setOpen] = useState(false);
-
   useEffect(() => {
     const stored = localStorage.getItem("credentials");
     if (stored) {
@@ -52,12 +36,11 @@ export function SettingsDialog() {
       setFormData({
         firmSlug: parsedCredentials.firmSlug || '',
         firmApiKey: parsedCredentials.firmApiKey || '',
-        clockworkApiKey: '', // We don't store these directly
+        clockworkApiKey: '', 
         clockworkApiSecret: '',
         openaiApiKey: parsedCredentials.openaiApiKey || ''
       });
     } else if (process.env.NODE_ENV === 'development') {
-      // In development, use environment variables
       const clockworkAuthKey = btoa(`${process.env.NEXT_PUBLIC_CLOCKWORK_PUBLIC_KEY}:${process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY}`);
       const devCredentials = {
         firmSlug: process.env.NEXT_PUBLIC_FIRM_SLUG || '',
@@ -74,8 +57,6 @@ export function SettingsDialog() {
         clockworkApiSecret: process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY || '',
         openaiApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || ''
       });
-    } else {
-      setOpen(true); // Automatically open if no credentials exist in production
     }
   }, []);
 
@@ -125,23 +106,21 @@ export function SettingsDialog() {
   };
 
   return (
-    <Dialog modal={true} open={open} onOpenChange={(newOpen) => {
-      setOpen(newOpen);
-      // If credentials don't exist and we're not in dev mode, keep dialog open
-      if (!localStorage.getItem("credentials") && process.env.NODE_ENV !== 'development') {
-        setOpen(true);
-      }
-    }}>
+    <Dialog>
       <DialogTrigger asChild>
         <Button 
           variant="ghost" 
           size="icon"
-          onClick={() => setOpen(true)}
         >
           <Settings className="h-5 w-5" />
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent onInteractOutside={(e) => {
+        // Prevent closing if credentials don't exist
+        if (!localStorage.getItem("credentials") && process.env.NODE_ENV !== 'development') {
+          e.preventDefault();
+        }
+      }}>
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
