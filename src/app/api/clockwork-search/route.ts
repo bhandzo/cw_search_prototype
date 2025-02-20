@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     }
     
     const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
-    const { firmSlug, firmApiKey, clockworkAuthKey, maxCandidates } = credentials;
+    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
 
     if (!firmSlug || !firmApiKey || !clockworkAuthKey) {
       throw new Error("Invalid credentials");

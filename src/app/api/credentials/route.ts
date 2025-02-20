@@ -15,7 +15,7 @@ export async function GET() {
   try {
     const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
     return NextResponse.json(credentials);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid credentials format" }, { status: 400 });
   }
 }
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ status: "success" });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to save credentials" }, { status: 500 });
   }
 }
@@ -48,7 +48,7 @@ export async function DELETE() {
     // Delete the credentials cookie
     cookies().delete(COOKIE_NAME);
     return NextResponse.json({ status: "success" });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to delete credentials" }, { status: 500 });
   }
 }
