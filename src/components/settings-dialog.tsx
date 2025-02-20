@@ -21,6 +21,7 @@ export function SettingsDialog() {
     clockworkApiKey: "",
     clockworkApiSecret: "",
     openaiApiKey: "",
+    maxCandidates: 5,
   });
 
   const [credentials, setCredentials] = useState<Credentials>({
@@ -52,7 +53,8 @@ export function SettingsDialog() {
         firmApiKey: parsedCredentials.firmApiKey || '',
         clockworkApiKey: clockworkApiKey || '',
         clockworkApiSecret: clockworkApiSecret || '',
-        openaiApiKey: parsedCredentials.openaiApiKey || ''
+        openaiApiKey: parsedCredentials.openaiApiKey || '',
+        maxCandidates: parsedCredentials.maxCandidates || 5
       };
       console.log('Setting form data:', newFormData);
       setFormData(newFormData);
@@ -95,7 +97,8 @@ export function SettingsDialog() {
       firmSlug: formData.firmSlug,
       firmApiKey: formData.firmApiKey,
       clockworkAuthKey,
-      openaiApiKey: formData.openaiApiKey
+      openaiApiKey: formData.openaiApiKey,
+      maxCandidates: formData.maxCandidates
     };
 
     try {
@@ -193,6 +196,26 @@ export function SettingsDialog() {
           )}
           <div className="text-sm text-muted-foreground mt-2 mb-4">
             You can get your firm API key and public/secret key pair from your profile in Clockwork
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxCandidates">Maximum Candidates to Analyze</Label>
+            <Input
+              id="maxCandidates"
+              type="number"
+              min="1"
+              max="20"
+              value={formData.maxCandidates}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  maxCandidates: Math.min(20, Math.max(1, parseInt(e.target.value) || 5))
+                })
+              }
+              required
+            />
+            <p className="text-sm text-muted-foreground">
+              Maximum number of candidates to analyze in detail (1-20)
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="openaiApiKey">OpenAI API Key</Label>

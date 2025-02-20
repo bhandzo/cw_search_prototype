@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const MAX_RESULTS = 5;
-
 type SummaryData = object; // or use `unknown` if you prefer
 
 // Define a type for the keywords object
@@ -45,6 +43,7 @@ interface SearchRequestBody {
     firmSlug: string;
     firmApiKey: string;
     clockworkAuthKey: string;
+    maxCandidates: number;
   };
 }
 
@@ -147,7 +146,7 @@ export async function POST(request: Request) {
         matchedKeywords: Array.from(matchedKeywords),
       }));
 
-    const resultsToProcess = allResults.slice(0, MAX_RESULTS);
+    const resultsToProcess = allResults.slice(0, credentials.maxCandidates);
 
     // Return initial results immediately
     const response = new NextResponse(
@@ -160,7 +159,7 @@ export async function POST(request: Request) {
                 type: "initial",
                 peopleSearch: allResults,
                 total: allResults.length,
-                limitedTo: MAX_RESULTS,
+                limitedTo: credentials.maxCandidates,
                 processingCount: resultsToProcess.length,
               }) + "\n"
             )
