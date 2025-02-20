@@ -1,6 +1,21 @@
 import { POST as clockworkSearch } from "@/app/api/clockwork-search/route";
 import { POST as openAiSearch } from "@/app/api/openai-search/route";
 
+// Mock Request and Response
+global.Request = class MockRequest {
+  private url: string;
+  private options: RequestInit;
+
+  constructor(url: string, options: RequestInit = {}) {
+    this.url = url;
+    this.options = options;
+  }
+
+  async json() {
+    return JSON.parse(this.options.body as string);
+  }
+} as unknown as typeof Request;
+
 describe("API Routes", () => {
   describe("/api/clockwork-search", () => {
     it("returns mock candidate data", async () => {
