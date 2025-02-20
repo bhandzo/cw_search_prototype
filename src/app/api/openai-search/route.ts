@@ -142,6 +142,11 @@ Return only valid JSON without any extra text or explanations.`,
     return NextResponse.json({
       structuredQuery,
       originalInput: userInput,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+      },
     });
   } catch (error) {
     console.error("OpenAI API error:", error);
@@ -157,7 +162,13 @@ Return only valid JSON without any extra text or explanations.`,
 
     return NextResponse.json(
       { error: "Failed to process query" },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
+      }
     );
   }
 }
