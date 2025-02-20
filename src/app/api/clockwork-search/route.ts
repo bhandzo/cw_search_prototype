@@ -5,21 +5,32 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { query, clockworkApiKey, firmApiKey, firmSlug } = body;
 
-    // In production, this would be a real API call
-    // const response = await fetch(
-    //   `https://api.clockworkrecruiting.com/v3.0/setpiecepeople_search?q=${encodeURIComponent(query)}`,
-    //   {
-    //     headers: {
-    //       'X-API-Key': clockworkApiKey,
-    //       'Accept': 'application/json',
-    //       'Authorization': firmApiKey
-    //     }
-    //   }
-    // );
-    // const data = await response.json();
+    const response = await fetch(
+      `https://api.clockworkrecruiting.com/v3.0/setpiecepeople_search?q=${encodeURIComponent(query)}`,
+      {
+        headers: {
+          'X-API-Key': clockworkApiKey,
+          'Accept': 'application/json',
+          'Authorization': firmApiKey
+        }
+      }
+    );
 
-    // For now, return mock response
-    const mockResponse = {
+    if (!response.ok) {
+      console.error('Clockwork API error:', await response.text());
+      throw new Error(`Clockwork API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Clockwork API error:', error);
+    return NextResponse.json(
+      { error: "Failed to fetch candidates" },
+      { status: 500 }
+    );
+  }
+}
       peopleSearch: [
         {
           id: "6ae0bd2c-e0ae-402e-a479-d8d14104df9d",
