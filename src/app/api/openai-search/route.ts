@@ -5,6 +5,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+function isFetchError(error: any): error is { response: Response } {
+  return error && error.response && error.response instanceof Response;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -60,11 +64,13 @@ Return only the structured query in plain text without any extra explanations.`,
   } catch (error) {
     console.error("OpenAI API error:", error);
 
-    if (error.response) {
+    if (isFetchError(error)) {
       // Log specific error details from OpenAI API response
-      console.error("OpenAI API response error:", error.response.data);
-    } else {
+      console.error("OpenAI API response error:", error.response);
+    } else if (error instanceof Error) {
       console.error("Unexpected error:", error.message);
+    } else {
+      console.error("Unknown error type");
     }
 
     return NextResponse.json(
