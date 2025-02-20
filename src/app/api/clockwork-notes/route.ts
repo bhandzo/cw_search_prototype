@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
 import { Note } from "@/types/clockwork";
 
-interface NotesResponse {
-  notes: Note[];
-}
-
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse<{ notes: Note[] }>> {
   try {
     const body = await request.json();
     const { personId, credentials } = body;
