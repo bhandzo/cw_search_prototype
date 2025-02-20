@@ -38,8 +38,8 @@ export default function Home() {
       if (existingKeywords) {
         keywords = existingKeywords;
       } else {
-        const { structuredQuery } = await openaiResponse.json();
-        keywords = JSON.parse(structuredQuery);
+        const response = await openaiResponse.json();
+        keywords = JSON.parse(response.structuredQuery);
       }
 
       // Get candidates from Clockwork
@@ -65,7 +65,7 @@ export default function Home() {
           item.timestamp === timestamp
             ? {
                 ...item,
-                keywords: JSON.parse(structuredQuery),
+                keywords: keywords,
                 resultCount: results.length,
                 status: "complete",
               }
