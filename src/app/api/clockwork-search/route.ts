@@ -161,14 +161,15 @@ export async function POST(request: Request) {
     });
 
     // Sort by frequency and convert back to array
-    const combinedPeopleSearch = Array.from(personFrequency.values())
+    const allResults = Array.from(personFrequency.values())
       .sort((a, b) => b.count - a.count)
       .map(({ person, count, matchedKeywords }) => ({
         ...person,
         matchScore: count,
         matchedKeywords: Array.from(matchedKeywords)
-      }))
-      .slice(0, MAX_RESULTS);
+      }));
+
+    const resultsToProcess = allResults.slice(0, MAX_RESULTS);
 
     // Return initial results immediately
     const response = new NextResponse(
@@ -179,15 +180,16 @@ export async function POST(request: Request) {
             new TextEncoder().encode(
               JSON.stringify({
                 type: 'initial',
-                peopleSearch: combinedPeopleSearch,
-                total: combinedPeopleSearch.length,
-                limitedTo: MAX_RESULTS
+                peopleSearch: allResults,
+                total: allResults.length,
+                limitedTo: MAX_RESULTS,
+                processingCount: resultsToProcess.length
               }) + '\n'
             )
           );
 
-          // Process each result
-          for (const result of combinedPeopleSearch) {
+          // Process top results
+          for (const result of resultsToProcess) {
             // Fetch notes
             const notesResponse = await fetch(`${request.url.split('/api/')[0]}/api/clockwork-notes`, {
               method: 'POST',
