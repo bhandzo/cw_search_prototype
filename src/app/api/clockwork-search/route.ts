@@ -90,9 +90,47 @@ export async function POST(request: Request) {
         matchedKeywords: Array.from(matchedKeywords)
       }));
 
+    // Enrich results with notes and summaries
+    const enrichedResults = [];
+    for (const result of combinedPeopleSearch) {
+      // Fetch notes
+      const notesResponse = await fetch(`${request.url.split('/api/')[0]}/api/clockwork-notes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          personId: result.id,
+          credentials 
+        })
+      });
+      
+      if (notesResponse.ok) {
+        const notesData = await notesResponse.json();
+        result.notes = notesData.notes || [];
+      }
+
+      // Generate summaries
+      const summaryResponse = await fetch(`${request.url.split('/api/')[0]}/api/openai-summary`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          person: result,
+          originalQuery: body.originalQuery,
+          keywords: keywordsList
+        })
+      });
+
+      if (summaryResponse.ok) {
+        const summaryData = await summaryResponse.json();
+        result.shortSummary = summaryData.shortSummary;
+        result.longSummary = summaryData.longSummary;
+      }
+
+      enrichedResults.push(result);
+    }
+
     return NextResponse.json({ 
-      peopleSearch: combinedPeopleSearch || [],
-      total: combinedPeopleSearch?.length || 0 
+      peopleSearch: enrichedResults || [],
+      total: enrichedResults?.length || 0 
     });
   } catch (error) {
     console.error("Clockwork API error:", error);

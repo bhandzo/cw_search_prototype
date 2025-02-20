@@ -37,6 +37,13 @@ export function CandidateCard({
       <p className="text-sm text-muted-foreground mt-1">{currentPosition}</p>
       <p className="text-sm text-muted-foreground">{location}</p>
       
+      {person.shortSummary && (
+        <p className="text-sm mt-2">{person.shortSummary}</p>
+      )}
+      {person.longSummary && (
+        <p className="text-sm mt-2 text-muted-foreground">{person.longSummary}</p>
+      )}
+      
       {keywords.length > 0 && (
         <div className="mt-4 text-sm space-y-2">
           <h4 className="font-medium">Matched Content:</h4>

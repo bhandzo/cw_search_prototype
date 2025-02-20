@@ -48,6 +48,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           keywords,
+          originalQuery: query,
           credentials: JSON.parse(localStorage.getItem("credentials") || "{}")
         }),
       });
