@@ -47,14 +47,20 @@ interface SearchRequestBody {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as SearchRequestBody;
-    const { keywords, credentials } = body;
+    const { keywords } = body;
 
-    if (!credentials) {
-      console.error("No API credentials provided");
-      throw new Error("No API credentials provided");
+    // Get credentials from cookie instead of request body
+    const credentialsCookie = cookies().get("credentials");
+    if (!credentialsCookie) {
+      throw new Error("No credentials found");
     }
+    
+    const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
+    const { firmSlug, firmApiKey, clockworkAuthKey, maxCandidates } = credentials;
 
-    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
+    if (!firmSlug || !firmApiKey || !clockworkAuthKey) {
+      throw new Error("Invalid credentials");
+    }
 
     console.log(`Making Clockwork API request for firm: ${firmSlug}`);
     console.log("Using auth key:", clockworkAuthKey);

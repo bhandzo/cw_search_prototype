@@ -51,7 +51,6 @@ export default function Home() {
         body: JSON.stringify({
           keywords,
           originalQuery: query,
-          credentials: await (await fetch("/api/credentials")).json(),
         }),
       });
 

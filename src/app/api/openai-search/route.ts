@@ -1,9 +1,26 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { cookies } from "next/headers";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || (await (await fetch("/api/credentials")).json()).openaiApiKey,
-});
+async function getOpenAIKey() {
+  // Try environment variable first
+  if (process.env.OPENAI_API_KEY) {
+    return process.env.OPENAI_API_KEY;
+  }
+
+  // Fall back to credentials cookie
+  const credentialsCookie = cookies().get("credentials");
+  if (!credentialsCookie) {
+    throw new Error("No credentials found");
+  }
+  
+  const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
+  if (!credentials.openaiApiKey) {
+    throw new Error("No OpenAI API key found in credentials");
+  }
+  
+  return credentials.openaiApiKey;
+}
 
 function isFetchError(error: unknown): error is { response: Response } {
   return (
@@ -15,6 +32,9 @@ function isFetchError(error: unknown): error is { response: Response } {
 
 export async function POST(request: Request) {
   try {
+    const apiKey = await getOpenAIKey();
+    const openai = new OpenAI({ apiKey });
+
     const body = await request.json();
     const { userInput } = body;
 
