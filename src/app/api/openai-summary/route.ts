@@ -49,12 +49,19 @@ Write two summaries:
       throw new Error("Failed to generate summary");
     }
 
-    // Split the content into the two summaries
-    const [shortSummary, longSummary] = content.split("\n\n").filter(Boolean);
+    // Split the content into the two summaries and clean them
+    const [shortSummary, longSummary] = content
+      .split("\n\n")
+      .filter(Boolean)
+      .map(summary => 
+        summary
+          .replace(/^[12]\.\s*/, "") // Remove numbered labels
+          .replace(/^(Short|Long) Summary:\s*/i, "") // Remove any "Short Summary:" or "Long Summary:" labels
+      );
 
     return NextResponse.json({
-      shortSummary: shortSummary.replace(/^1\.\s*/, ""),
-      longSummary: longSummary.replace(/^2\.\s*/, ""),
+      shortSummary,
+      longSummary,
     });
   } catch (error) {
     console.error("OpenAI API error:", error);

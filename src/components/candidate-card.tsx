@@ -42,8 +42,22 @@ export function CandidateCard({
       {/* Summaries Section */}
       {(person.shortSummary || person.longSummary) && (
         <div className="mt-4 space-y-2">
-          <p className="text-sm">{person.shortSummary}</p>
-          <p className="text-sm text-muted-foreground">{person.longSummary}</p>
+          {person.shortSummary && (
+            <p className="text-sm" dangerouslySetInnerHTML={{
+              __html: keywords.reduce((text, keyword) => {
+                const regex = new RegExp(`(${keyword})`, 'gi');
+                return text.replace(regex, '<strong>$1</strong>');
+              }, person.shortSummary)
+            }} />
+          )}
+          {person.longSummary && (
+            <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{
+              __html: keywords.reduce((text, keyword) => {
+                const regex = new RegExp(`(${keyword})`, 'gi');
+                return text.replace(regex, '<strong>$1</strong>');
+              }, person.longSummary)
+            }} />
+          )}
         </div>
       )}
       
