@@ -167,14 +167,12 @@ export async function POST(request: Request) {
         ...person,
         matchScore: count,
         matchedKeywords: Array.from(matchedKeywords)
-      }));
-
-    // Limit results before enrichment
-    const limitedResults = combinedPeopleSearch.slice(0, MAX_RESULTS);
+      }))
+      .slice(0, MAX_RESULTS);
 
     // Enrich results with notes and summaries
     const enrichedResults = [];
-    for (const result of limitedResults) {
+    for (const result of combinedPeopleSearch) {
       // Fetch notes
       const notesResponse = await fetch(`${request.url.split('/api/')[0]}/api/clockwork-notes`, {
         method: 'POST',

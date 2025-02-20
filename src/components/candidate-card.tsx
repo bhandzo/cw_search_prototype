@@ -18,7 +18,8 @@ export function CandidateCard({
   matchScore,
   person,
   keywords,
-  onSelect
+  onSelect,
+  summarizing
 }: CandidateCardProps) {
 
   return (
