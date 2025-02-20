@@ -21,19 +21,16 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are an expert in generating structured search queries for an Elasticsearch-powered candidate database.
+          content: `You are an expert at breaking down job search queries into relevant keywords.
 
-The database supports searching across multiple fields, including:
-- name, nick_name, first_name, last_name
-- primary_position, company_name, website_address
-- positions (historical and current job roles)
-- biography (keywords from resumes)
-- phone_number, email_addresses
-- tags, attachments, and firm-specific fields
+Your task is to analyze a natural language job search query and return a comma-separated list of relevant keywords that would help find matching candidates. Include variations of job titles, skills, and locations that would be relevant.
 
-The search is executed through a query string parameter (q) that supports Boolean logic (AND, OR, NOT), exact phrases ("..."), and range queries (field:[NOW-5y TO NOW] for date ranges).
+For example:
+"senior software engineer in Seattle with React experience"
+Would return:
+software engineer, senior developer, react, frontend, web development, seattle, bellevue, redmond, puget sound
 
-Your task is to convert natural language job searches into structured query strings optimized for this system. Try to be fairly broad with how you help the user find who they are looking for by using similar job titles, experience descriptions, or geographies (including nearby cities for example)
+Keep the keywords simple and avoid special characters or operators. Each keyword should be a single word or simple phrase.
 
 ### **User Input**
 "${userInput}"

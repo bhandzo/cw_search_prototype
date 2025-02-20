@@ -39,29 +39,11 @@ export function Sidebar({ searchHistory, onSearch }: SidebarProps) {
             )}
             {item.structuredQuery && (
               <div className="text-sm text-muted-foreground space-y-2">
-                <div className="font-medium">Elasticsearch Query:</div>
+                <div className="font-medium">Search Keywords:</div>
                 <div className="font-mono text-xs bg-muted p-2 rounded whitespace-pre-wrap break-all">
-                  {item.structuredQuery.split(' AND ').map((clause, i) => (
-                    <div key={i}>
-                      {i > 0 && <span className="text-blue-500 font-bold"> AND </span>}
-                      {clause.includes(' OR ') ? (
-                        clause.split(' OR ').map((orClause, j) => (
-                          <span key={j}>
-                            {j > 0 && <span className="text-green-500 font-bold"> OR </span>}
-                            {orClause.includes('NOT ') ? (
-                              <>
-                                <span className="text-red-500 font-bold">NOT </span>
-                                {orClause.replace('NOT ', '')}
-                              </>
-                            ) : orClause}
-                          </span>
-                        ))
-                      ) : clause.includes('NOT ') ? (
-                        <>
-                          <span className="text-red-500 font-bold">NOT </span>
-                          {clause.replace('NOT ', '')}
-                        </>
-                      ) : clause}
+                  {item.structuredQuery.split(',').map((keyword, i) => (
+                    <div key={i} className="inline-block m-1 px-2 py-1 bg-secondary rounded">
+                      {keyword.trim()}
                     </div>
                   ))}
                 </div>
