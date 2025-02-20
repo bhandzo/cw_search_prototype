@@ -61,12 +61,26 @@ Return only valid JSON without any extra text or explanations.`,
       temperature: 0.1,
     });
 
-    console.log("OpenAI API response:", completion);
+    console.log("OpenAI API full response:", JSON.stringify(completion, null, 2));
+    console.log("OpenAI API choices:", JSON.stringify(completion.choices, null, 2));
+    
+    const firstChoice = completion.choices?.[0];
+    console.log("First choice:", JSON.stringify(firstChoice, null, 2));
+    
+    const messageContent = firstChoice?.message?.content;
+    console.log("Message content:", messageContent);
 
-    const structuredQuery = completion.choices?.[0]?.message?.content?.trim();
+    const structuredQuery = messageContent?.trim();
 
     if (!structuredQuery) {
       console.error("Structured query is null or undefined");
+      console.error("Response structure:", {
+        hasChoices: !!completion.choices,
+        choicesLength: completion.choices?.length,
+        hasFirstChoice: !!firstChoice,
+        hasMessage: !!firstChoice?.message,
+        hasContent: !!messageContent
+      });
       throw new Error("Failed to generate structured query");
     }
 
