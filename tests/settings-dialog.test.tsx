@@ -2,6 +2,12 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SettingsDialog } from "@/components/settings-dialog";
 
+// Mock Lucide icons
+jest.mock("lucide-react", () => ({
+  Settings: () => <div data-testid="settings-icon" />,
+  X: () => <div data-testid="close-icon" />
+}));
+
 // Mock the localStorage
 const localStorageMock = (() => {
   let store: { [key: string]: string } = {};
@@ -27,7 +33,7 @@ describe("SettingsDialog", () => {
 
   it("should render settings button", () => {
     render(<SettingsDialog />);
-    expect(screen.getByRole("button")).toBeInTheDocument();
+    expect(screen.getByTestId("settings-icon")).toBeInTheDocument();
   });
 
   it("should open dialog when no credentials exist", () => {
