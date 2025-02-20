@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Pencil } from "lucide-react";
+import { X, Pencil, Plus, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface EditableKeywordsProps {
   keywords: Record<string, string[]>;
@@ -14,6 +20,15 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
   const [editingKeyword, setEditingKeyword] = useState<{category: string, index: number} | null>(null);
   const [editValue, setEditValue] = useState("");
   const [editedKeywords, setEditedKeywords] = useState(keywords);
+  const [showAddKeyword, setShowAddKeyword] = useState<string | null>(null);
+  
+  const availableCategories = [
+    'location',
+    'title',
+    'experience',
+    'industry',
+    'skills'
+  ].filter(category => !editedKeywords[category]);
 
   useEffect(() => {
     setEditedKeywords(keywords);
@@ -42,6 +57,25 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
     setEditedKeywords(newKeywords);
   };
 
+  const handleAddKeyword = (category: string) => {
+    const newKeywords = {...editedKeywords};
+    if (!newKeywords[category]) {
+      newKeywords[category] = [];
+    }
+    newKeywords[category].push('');
+    setEditedKeywords(newKeywords);
+    setEditingKeyword({ category, index: newKeywords[category].length - 1 });
+    setEditValue('');
+  };
+
+  const handleAddCategory = (category: string) => {
+    const newKeywords = {...editedKeywords};
+    newKeywords[category] = [''];
+    setEditedKeywords(newKeywords);
+    setEditingKeyword({ category, index: 0 });
+    setEditValue('');
+  };
+
   const handleUpdate = () => {
     onUpdate(editedKeywords);
     setIsEditing(false);
@@ -60,13 +94,25 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
         </Button>
       </div>
       {Object.entries(editedKeywords).map(([category, terms]) => (
-        <div key={category} className="space-y-1">
-          <div className="font-medium text-sm">{category}:</div>
-          <div className="flex flex-wrap gap-2">
+        <div key={category} className="group">
+          <div className="flex items-center gap-2">
+            <div className="font-medium text-sm uppercase">{category}</div>
+            {isEditing && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-0 h-auto"
+                onClick={() => handleAddKeyword(category)}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2 mt-1">
             {terms.map((term, index) => (
               <div
                 key={`${category}-${index}`}
-                className="group flex items-center bg-secondary rounded-full px-3 py-1 text-sm"
+                className="group flex items-center bg-secondary/50 hover:bg-secondary/70 rounded-lg px-3 py-1 text-sm transition-colors"
               >
                 {editingKeyword?.category === category && editingKeyword?.index === index ? (
                   <input
@@ -100,12 +146,37 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
         </div>
       ))}
       {isEditing && (
-        <Button 
-          className="w-full mt-4" 
-          onClick={handleUpdate}
-        >
-          Update Search
-        </Button>
+        <>
+          {availableCategories.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full mt-4 text-muted-foreground"
+                >
+                  Add categories <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full">
+                {availableCategories.map((category) => (
+                  <DropdownMenuItem
+                    key={category}
+                    onClick={() => handleAddCategory(category)}
+                  >
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <Button 
+            className="w-full mt-2" 
+            onClick={handleUpdate}
+          >
+            Update Search
+          </Button>
+        </>
       )}
     </div>
   );
