@@ -5,6 +5,13 @@ import Home from "@/app/page";
 describe("Home", () => {
   beforeEach(() => {
     global.fetch = jest.fn();
+    // Mock localStorage
+    Storage.prototype.getItem = jest.fn(() => JSON.stringify({
+      firmSlug: "test",
+      firmApiKey: "test-key",
+      clockworkApiKey: "test-key",
+      clockworkApiSecret: "test-secret"
+    }));
   });
 
   afterEach(() => {
@@ -17,8 +24,8 @@ describe("Home", () => {
     expect(screen.getByRole("button", { name: /search/i })).toBeInTheDocument();
   });
 
-  it("adds search to history and shows structured query", async () => {
-    const mockResponse = {
+  it("adds search to history and shows candidates", async () => {
+    const mockOpenAIResponse = {
       structuredQuery: {
         role: "Senior Developer",
         skills: ["React", "TypeScript"],
@@ -27,10 +34,33 @@ describe("Home", () => {
       }
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve(mockResponse)
-    });
+    const mockClockworkResponse = {
+      candidates: [
+        {
+          id: "123",
+          name: "John Doe",
+          currentPosition: "Senior Developer",
+          location: "San Francisco, CA"
+        },
+        {
+          id: "456",
+          name: "Jane Smith",
+          currentPosition: "Product Manager",
+          location: "New York, NY"
+        }
+      ]
+    };
+
+    // Mock both API calls
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockOpenAIResponse)
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockClockworkResponse)
+      });
 
     const user = userEvent.setup();
     render(<Home />);
@@ -39,16 +69,34 @@ describe("Home", () => {
     await user.type(searchInput, "test search");
     await user.click(screen.getByRole("button", { name: /search/i }));
     
+    // Check that the structured query is shown
     expect(screen.getByText("test search")).toBeInTheDocument();
     expect(await screen.findByText("Role: Senior Developer")).toBeInTheDocument();
     expect(await screen.findByText("Skills: React, TypeScript")).toBeInTheDocument();
-    expect(await screen.findByText("Location: Remote")).toBeInTheDocument();
-    expect(await screen.findByText("Experience: 5+ years")).toBeInTheDocument();
+    
+    // Check that candidates are shown
+    expect(await screen.findByText("John Doe")).toBeInTheDocument();
+    expect(await screen.findByText("Jane Smith")).toBeInTheDocument();
+    expect(screen.getByText("San Francisco, CA")).toBeInTheDocument();
+    expect(screen.getByText("New York, NY")).toBeInTheDocument();
 
+    // Verify API calls
     expect(global.fetch).toHaveBeenCalledWith('/api/openai-search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userInput: "test search" })
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/clockwork-search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: mockOpenAIResponse.structuredQuery,
+        firmSlug: "test",
+        firmApiKey: "test-key",
+        clockworkApiKey: "test-key",
+        clockworkApiSecret: "test-secret"
+      })
     });
   });
 
