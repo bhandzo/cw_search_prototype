@@ -29,7 +29,6 @@ export function SettingsDialog() {
     const stored = localStorage.getItem("credentials");
     if (stored) {
       const parsedCredentials = JSON.parse(stored);
-      setCredentials(parsedCredentials);
 
       // Decode the clockwork auth key to get back the original API key and secret
       let clockworkApiKey = '';
@@ -111,7 +110,6 @@ export function SettingsDialog() {
       }
 
       localStorage.setItem("credentials", JSON.stringify(credentialsToSave));
-      setCredentials(credentialsToSave);
       setOpen(false);
     } catch (error) {
       setError(error.message);
