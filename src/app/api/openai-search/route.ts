@@ -23,32 +23,35 @@ export async function POST(request: Request) {
           role: "system",
           content: `You are an expert at breaking down job search queries into categorized keywords.
 
-Your task is to analyze a natural language job search query and return a structured list of keywords organized by category. Only include categories that are explicitly mentioned or strongly implied in the query.
+Your task is to analyze a natural language job search query and return a JSON object of keywords organized by category. Only include categories that are explicitly mentioned or strongly implied in the query.
 
 Possible categories (only use what's relevant):
-- Location: Cities, regions, or work arrangements (e.g., remote)
-- Title: Job titles and roles
-- Experience: Years or level of experience
-- Industry: Specific sectors or company types
-- Skills: Technical skills, tools, or competencies
+- location: Cities, regions, or work arrangements (e.g., remote)
+- title: Job titles and roles
+- experience: Years or level of experience
+- industry: Specific sectors or company types
+- skills: Technical skills, tools, or competencies
 
-Format the response as:
-Category: keyword1, keyword2, keyword3
+Format the response as a JSON object with category keys and array values:
+{
+  "location": ["keyword1", "keyword2"],
+  "title": ["keyword3", "keyword4"],
+  etc...
+}
 
 Example query: "senior software engineer in Seattle with 5+ years React experience"
 Would return:
-Location: seattle, bellevue, redmond
-Title: software engineer, senior developer, tech lead
-Experience: 5 years, senior level
-Skills: react, javascript, frontend
+{
+  "location": ["seattle", "bellevue", "redmond"],
+  "title": ["software engineer", "senior developer", "tech lead"],
+  "experience": ["5 years", "senior level"],
+  "skills": ["react", "javascript", "frontend"]
+}
 
 Only include categories that are relevant to the query. Don't make up or infer categories that aren't mentioned.
-Keep keywords simple without special characters or operators. Each keyword should be a single word or simple phrase. For each category try to create a fairly comprehensive list of keywords. 
+Keep keywords simple without special characters or operators. Each keyword should be a single word or simple phrase.
 
-### **User Input**
-"${userInput}"
-
-Return only the structured query in plain text without any extra explanations.`,
+Return only valid JSON without any extra text or explanations.`,
         },
         {
           role: "user",
