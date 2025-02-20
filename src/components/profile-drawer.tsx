@@ -33,6 +33,8 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
     return format(new Date(dateString), 'MMM yyyy');
   };
 
+  if (!person) return null;
+
   return (
     <div 
       className={`fixed top-0 right-0 w-1/3 h-screen bg-background border-l transform transition-transform duration-200 ease-in-out overflow-y-auto z-50 ${
