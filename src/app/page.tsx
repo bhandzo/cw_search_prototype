@@ -16,6 +16,7 @@ export default function Home() {
 
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [currentResults, setCurrentResults] = useState<any[]>([]);
+  const [selectedPerson, setSelectedPerson] = useState<any>(null);
 
   const handleSearch = async (query: string) => {
     const timestamp = Date.now();
@@ -94,6 +95,7 @@ export default function Home() {
                     matchScore={person.matchScore}
                     person={person}
                     keywords={keywords}
+                    onSelect={setSelectedPerson}
                   />
                 );
               })}
@@ -105,6 +107,11 @@ export default function Home() {
           <SearchBar onSearch={handleSearch} />
         </main>
       )}
+      <ProfileDrawer 
+        person={selectedPerson}
+        open={!!selectedPerson}
+        onClose={() => setSelectedPerson(null)}
+      />
     </div>
   );
 }

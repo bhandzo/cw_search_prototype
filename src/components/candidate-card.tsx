@@ -1,8 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { ProfileDrawer } from "./profile-drawer";
-
 interface CandidateCardProps {
   name: string;
   currentPosition: string;
@@ -10,6 +7,7 @@ interface CandidateCardProps {
   matchScore?: number;
   person: any;
   keywords: string[];
+  onSelect: (person: any) => void;
 }
 
 export function CandidateCard({ 
@@ -18,15 +16,15 @@ export function CandidateCard({
   location, 
   matchScore,
   person,
-  keywords 
+  keywords,
+  onSelect
 }: CandidateCardProps) {
-  const [showProfile, setShowProfile] = useState(false);
 
   return (
     <>
       <div 
         className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white cursor-pointer"
-        onClick={() => setShowProfile(true)}
+        onClick={() => onSelect(person)}
       >
       <div className="flex justify-between items-start">
         <h3 className="font-semibold text-lg">{name}</h3>
@@ -71,11 +69,6 @@ export function CandidateCard({
         </div>
       )}
       </div>
-      <ProfileDrawer 
-        person={person}
-        open={showProfile}
-        onClose={() => setShowProfile(false)}
-      />
     </>
   );
 }

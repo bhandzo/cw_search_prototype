@@ -35,7 +35,7 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
 
   return (
     <div 
-      className={`fixed top-0 right-0 w-1/3 h-screen bg-background border-l transform transition-transform duration-200 ease-in-out overflow-y-auto ${
+      className={`fixed top-0 right-0 w-1/3 h-screen bg-background border-l transform transition-transform duration-200 ease-in-out overflow-y-auto z-50 ${
         open ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
