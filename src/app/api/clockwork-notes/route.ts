@@ -27,7 +27,7 @@ export async function POST(request: Request): Promise<NextResponse<{ notes: Note
   } catch (error) {
     console.error("Error fetching notes:", error);
     return NextResponse.json(
-      { error: "Failed to fetch notes" },
+      { notes: [], error: "Failed to fetch notes" },
       { status: 500 }
     );
   }
