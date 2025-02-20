@@ -45,8 +45,24 @@ export function SettingsDialog() {
     const stored = localStorage.getItem("credentials");
     if (stored) {
       setCredentials(JSON.parse(stored));
+    } else if (process.env.NODE_ENV === 'development') {
+      // In development, use environment variables
+      const clockworkAuthKey = btoa(`${process.env.NEXT_PUBLIC_CLOCKWORK_PUBLIC_KEY}:${process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY}`);
+      const devCredentials = {
+        firmSlug: process.env.NEXT_PUBLIC_FIRM_SLUG || '',
+        firmApiKey: process.env.NEXT_PUBLIC_FIRM_API_KEY || '',
+        clockworkAuthKey
+      };
+      localStorage.setItem("credentials", JSON.stringify(devCredentials));
+      setCredentials(devCredentials);
+      setFormData({
+        firmSlug: process.env.NEXT_PUBLIC_FIRM_SLUG || '',
+        firmApiKey: process.env.NEXT_PUBLIC_FIRM_API_KEY || '',
+        clockworkApiKey: process.env.NEXT_PUBLIC_CLOCKWORK_PUBLIC_KEY || '',
+        clockworkApiSecret: process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY || '',
+      });
     } else {
-      setOpen(true); // Automatically open if no credentials exist
+      setOpen(true); // Automatically open if no credentials exist in production
     }
   }, []);
 
@@ -129,7 +145,7 @@ export function SettingsDialog() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="clockworkApiKey">Clockwork API Key</Label>
+            <Label htmlFor="clockworkApiKey">Public Key</Label>
             <Input
               id="clockworkApiKey"
               value={formData.clockworkApiKey}
@@ -140,7 +156,7 @@ export function SettingsDialog() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="clockworkApiSecret">Clockwork API Secret</Label>
+            <Label htmlFor="clockworkApiSecret">Secret Key</Label>
             <Input
               id="clockworkApiSecret"
               value={formData.clockworkApiSecret}
@@ -156,6 +172,9 @@ export function SettingsDialog() {
           {error && (
             <div className="text-sm text-destructive">{error}</div>
           )}
+          <div className="text-sm text-muted-foreground mt-2 mb-4">
+            You can get your firm API key and public/secret key pair from your profile in Clockwork
+          </div>
           <Button type="submit" className="w-full" disabled={isValidating}>
             {isValidating ? "Validating..." : "Save"}
           </Button>
