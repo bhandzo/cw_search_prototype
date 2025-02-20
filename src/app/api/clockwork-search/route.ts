@@ -13,6 +13,7 @@ export async function POST(request: Request) {
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
     
     console.log(`Making Clockwork API request for firm: ${firmSlug}`);
+    console.log('Using auth key:', clockworkAuthKey);
     console.log(`Search query: ${query}`);
 
     const response = await fetch(

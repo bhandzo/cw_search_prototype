@@ -13,6 +13,7 @@ export async function POST(request: Request) {
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
 
     console.log(`Validating credentials for firm: ${firmSlug}`);
+    console.log('Using auth key:', clockworkAuthKey);
 
     const response = await fetch(
       `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?limit=1`,

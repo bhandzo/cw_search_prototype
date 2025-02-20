@@ -59,7 +59,10 @@ export function SettingsDialog() {
     setIsValidating(true);
     
     // Create base64 encoded auth key from API key and secret
+    console.log('API Key:', formData.clockworkApiKey);
+    console.log('API Secret:', formData.clockworkApiSecret);
     const clockworkAuthKey = btoa(`${formData.clockworkApiKey}:${formData.clockworkApiSecret}`);
+    console.log('Combined string:', `${formData.clockworkApiKey}:${formData.clockworkApiSecret}`);
     console.log('Base64 encoded auth key:', clockworkAuthKey);
     
     const credentialsToSave = {
