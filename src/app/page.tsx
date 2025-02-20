@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
+import { LoadingStatus } from "@/components/loading-status";
 import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
 import { CandidateCard } from "@/components/candidate-card";
@@ -88,6 +89,48 @@ export default function Home() {
             : item
         )
       );
+
+      // Process summaries in batches
+      const BATCH_SIZE = 3;
+      for (let i = 0; i < results.length; i += BATCH_SIZE) {
+        const batch = results.slice(i, i + BATCH_SIZE);
+        const summaryPromises = batch.map(person => 
+          fetch("/api/openai-summary", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              person,
+              originalQuery: query,
+              keywords: Object.values(keywords).flat()
+            })
+          }).then(res => res.json())
+        );
+
+        const summaries = await Promise.all(summaryPromises);
+        
+        setCurrentResults(prev => 
+          prev.map(person => {
+            const summary = summaries.find(s => s.personId === person.id);
+            if (summary) {
+              return {
+                ...person,
+                shortSummary: summary.shortSummary,
+                longSummary: summary.longSummary
+              };
+            }
+            return person;
+          })
+        );
+      }
+
+      // Mark search as complete
+      setSearchHistory((prev) =>
+        prev.map((item) =>
+          item.timestamp === timestamp
+            ? { ...item, status: "complete" }
+            : item
+        )
+      );
     } catch (error) {
       setSearchHistory((prev) =>
         prev.map((item) =>
@@ -104,6 +147,9 @@ export default function Home() {
           <Sidebar searchHistory={searchHistory} onSearch={handleSearch} />
           <main className="flex-1 p-8 flex flex-col">
             <SearchBar onSearch={handleSearch} />
+            <div className="mt-4">
+              <LoadingStatus status={searchHistory[0].status} />
+            </div>
             <div className="mt-8 grid grid-cols-1 gap-4">
               {searchHistory[0]?.status === "complete" && currentResults.map((person) => {
                 const keywords = searchHistory[0]?.keywords

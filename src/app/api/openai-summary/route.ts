@@ -15,7 +15,17 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are an expert at analyzing candidate information and providing concise summaries.`,
+          content: `You are an expert at analyzing candidate profiles and providing concise, relevant summaries.
+
+For each candidate, provide two summaries:
+1. shortSummary (1 sentence): Focus on the most relevant qualifications and experience that match the search criteria. Be direct and specific.
+
+2. longSummary (2-3 sentences): Provide additional context about their background, skills, and achievements that demonstrate their fit for the role.
+
+Keep summaries focused on the candidate's qualifications. Avoid phrases like "This candidate appears in the results because" or "This person was included because".
+
+Example shortSummary: "Senior Frontend Engineer with 6 years of React experience at major Seattle tech companies."
+Example longSummary: "Led development teams at Amazon and Microsoft, specializing in large-scale web applications. Strong background in Vue.js and Node.js with a track record of mentoring junior developers."`,
         },
         {
           role: "user",
