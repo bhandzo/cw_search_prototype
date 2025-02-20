@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Settings } from "lucide-react";
-import type { Credentials, SettingsFormData } from "@/types/settings";
+import type { SettingsFormData } from "@/types/settings";
 
 export function SettingsDialog() {
   const [open, setOpen] = useState<boolean>(false);
