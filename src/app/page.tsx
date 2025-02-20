@@ -40,9 +40,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           query: openaiData.structuredQuery,
-          clockworkApiKey: "mock-key",
-          firmApiKey: "mock-key",
-          firmSlug: "mock-slug"
+          credentials: JSON.parse(localStorage.getItem("credentials") || "{}")
         }),
       });
 

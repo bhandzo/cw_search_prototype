@@ -3,15 +3,21 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { query, clockworkApiKey, firmApiKey, firmSlug } = body;
+    const { query, credentials } = body;
+    
+    if (!credentials) {
+      throw new Error("No API credentials provided");
+    }
+    
+    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
 
     const response = await fetch(
       `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(query)}`,
       {
         headers: {
-          'X-API-Key': clockworkApiKey,
+          'X-API-Key': firmApiKey,
           'Accept': 'application/json',
-          'Authorization': firmApiKey
+          'Authorization': clockworkAuthKey
         }
       }
     );
