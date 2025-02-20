@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Person } from "@/types/clockwork";
+import { Person, Note } from "@/types/clockwork";
 import { SearchStatus, SearchHistoryItem } from "@/types/search";
 import { LoadingStatus } from "@/components/loading-status";
 import { SearchBar } from "@/components/search-bar";

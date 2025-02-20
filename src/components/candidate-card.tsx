@@ -9,7 +9,7 @@ interface CandidateCardProps {
   matchScore?: number;
   person: Person;
   keywords: string[];
-  onSelect: (person: any) => void;
+  onSelect: (person: Person) => void;
   summarizing: boolean;
 }
 

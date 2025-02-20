@@ -38,9 +38,19 @@ async function saveSummaryToFile(personId: string, summaryData: SummaryData) {
   }
 }
 
+interface SearchRequestBody {
+  keywords: Record<string, string[]>;
+  originalQuery: string;
+  credentials: {
+    firmSlug: string;
+    firmApiKey: string;
+    clockworkAuthKey: string;
+  };
+}
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = await request.json() as SearchRequestBody;
     const { keywords, credentials } = body;
 
     if (!credentials) {
