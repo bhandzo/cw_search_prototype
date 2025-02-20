@@ -14,7 +14,6 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
   const [editingKeyword, setEditingKeyword] = useState<{category: string, index: number} | null>(null);
   const [editValue, setEditValue] = useState("");
   const [editedKeywords, setEditedKeywords] = useState(keywords);
-  const [showAddKeyword, setShowAddKeyword] = useState<string | null>(null);
   
   const availableCategories = [
     'location',

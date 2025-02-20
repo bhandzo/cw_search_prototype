@@ -1,8 +1,6 @@
 "use client";
 
-import { SearchBar } from "@/components/search-bar";
 import { EditableKeywords } from "@/components/editable-keywords";
-import { Person } from "@/types/clockwork";
 import { SearchHistoryItem } from "@/types/search";
 
 interface SidebarProps {
@@ -41,11 +39,6 @@ export function Sidebar({ searchHistory, onSearch }: SidebarProps) {
                   keywords={item.keywords}
                   onUpdate={(updatedKeywords) => {
                     // Update the search history with new keywords before searching
-                    const newHistory = searchHistory.map(historyItem => 
-                      historyItem.timestamp === item.timestamp 
-                        ? {...historyItem, keywords: updatedKeywords}
-                        : historyItem
-                    );
                     // Trigger a new search with the same query but updated keywords
                     onSearch(item.query, updatedKeywords);
                   }}
