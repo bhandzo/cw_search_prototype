@@ -2,19 +2,33 @@ import { NextResponse } from "next/server";
 import fs from 'fs';
 import path from 'path';
 
+const MAX_RESULTS = 5;
+
 async function saveSummaryToFile(personId: string, summaryData: any) {
   if (process.env.NODE_ENV === 'development') {
-    const summariesDir = path.join(process.cwd(), 'dev-data', 'summaries');
-    
-    if (!fs.existsSync(summariesDir)){
-      fs.mkdirSync(summariesDir, { recursive: true });
+    try {
+      const summariesDir = path.join(process.cwd(), 'dev-data', 'summaries');
+      
+      // Ensure directory exists
+      if (!fs.existsSync(summariesDir)){
+        fs.mkdirSync(summariesDir, { recursive: true });
+      }
+      
+      const filename = path.join(summariesDir, `${personId}-${Date.now()}.json`);
+      const dataToSave = {
+        personId,
+        timestamp: new Date().toISOString(),
+        ...summaryData
+      };
+      
+      fs.writeFileSync(
+        filename, 
+        JSON.stringify(dataToSave, null, 2)
+      );
+      console.log(`Saved summary to ${filename}`);
+    } catch (error) {
+      console.error('Error saving summary file:', error);
     }
-    
-    const filename = path.join(summariesDir, `${personId}-${Date.now()}.json`);
-    fs.writeFileSync(
-      filename, 
-      JSON.stringify(summaryData, null, 2)
-    );
   }
 }
 
@@ -155,9 +169,12 @@ export async function POST(request: Request) {
         matchedKeywords: Array.from(matchedKeywords)
       }));
 
+    // Limit results before enrichment
+    const limitedResults = combinedPeopleSearch.slice(0, MAX_RESULTS);
+
     // Enrich results with notes and summaries
     const enrichedResults = [];
-    for (const result of combinedPeopleSearch) {
+    for (const result of limitedResults) {
       // Fetch notes
       const notesResponse = await fetch(`${request.url.split('/api/')[0]}/api/clockwork-notes`, {
         method: 'POST',
@@ -186,6 +203,7 @@ export async function POST(request: Request) {
 
       if (summaryResponse.ok) {
         const summaryData = await summaryResponse.json();
+        await saveSummaryToFile(result.id, summaryData);
         result.shortSummary = summaryData.shortSummary;
         result.longSummary = summaryData.longSummary;
       }
@@ -194,8 +212,9 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ 
-      peopleSearch: enrichedResults || [],
-      total: enrichedResults?.length || 0 
+      peopleSearch: enrichedResults,
+      total: combinedPeopleSearch.length,
+      limitedTo: MAX_RESULTS
     });
   } catch (error) {
     console.error("Clockwork API error:", error);
