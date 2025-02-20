@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +16,7 @@ import { Settings } from "lucide-react";
 import type { SettingsFormData } from "@/types/settings";
 
 export function SettingsDialog() {
+  const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [formData, setFormData] = useState<SettingsFormData>({
     firmSlug: "",
@@ -24,6 +26,34 @@ export function SettingsDialog() {
     openaiApiKey: "",
     maxCandidates: 5,
   });
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/credentials", {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to logout");
+      }
+      
+      // Reset form data
+      setFormData({
+        firmSlug: "",
+        firmApiKey: "",
+        clockworkApiKey: "",
+        clockworkApiSecret: "",
+        openaiApiKey: "",
+        maxCandidates: 5,
+      });
+      
+      // Refresh the page to reset the app state
+      router.refresh();
+    } catch (error) {
+      console.error("Error logging out:", error);
+      setError("Failed to logout");
+    }
+  };
 
   useEffect(() => {
     const loadCredentials = async () => {
@@ -228,6 +258,14 @@ export function SettingsDialog() {
               required
             />
           </div>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full mb-2" 
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
           <Button type="submit" className="w-full" disabled={isValidating}>
             {isValidating ? "Validating..." : "Save"}
           </Button>

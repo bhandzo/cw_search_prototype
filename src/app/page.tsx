@@ -19,6 +19,12 @@ export default function Home() {
     query: string,
     existingKeywords?: Record<string, string[]>
   ) => {
+    const credentialsResponse = await fetch("/api/credentials");
+    if (!credentialsResponse.ok) {
+      alert("Please configure your credentials");
+      return;
+    }
+
     const timestamp = Date.now();
     setSearchHistory((prev) => [
       { query, timestamp, status: "generating-criteria" },
