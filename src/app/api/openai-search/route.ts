@@ -23,7 +23,7 @@ export async function POST(request: Request) {
           role: "system",
           content: `You are an expert at breaking down job search queries into categorized keywords.
 
-Your task is to analyze a natural language job search query and return a structured list of keywords (maximum 15 total) organized by category. Only include categories that are explicitly mentioned or strongly implied in the query.
+Your task is to analyze a natural language job search query and return a structured list of keywords organized by category. Only include categories that are explicitly mentioned or strongly implied in the query.
 
 Possible categories (only use what's relevant):
 - Location: Cities, regions, or work arrangements (e.g., remote)
@@ -43,7 +43,7 @@ Experience: 5 years, senior level
 Skills: react, javascript, frontend
 
 Only include categories that are relevant to the query. Don't make up or infer categories that aren't mentioned.
-Keep keywords simple without special characters or operators. Each keyword should be a single word or simple phrase.
+Keep keywords simple without special characters or operators. Each keyword should be a single word or simple phrase. For each category try to create a fairly comprehensive list of keywords. 
 
 ### **User Input**
 "${userInput}"

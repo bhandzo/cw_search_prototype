@@ -17,12 +17,14 @@ export async function POST(request: Request) {
     console.log(`Search query: ${query}`);
 
     // Split the comma-separated keywords
-    const keywords = query.split(',').map(k => k.trim());
-    
+    const keywords = query.split(",").map((k: string) => k.trim());
+
     // Make a request for each keyword
-    const searchPromises = keywords.map(keyword => 
+    const searchPromises = keywords.map((keyword: string) =>
       fetch(
-        `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(keyword)}`,
+        `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(
+          keyword
+        )}`,
         {
           headers: {
             "X-API-Key": firmApiKey,
@@ -30,7 +32,7 @@ export async function POST(request: Request) {
             Authorization: `Bearer ${clockworkAuthKey}`,
           },
         }
-      ).then(res => {
+      ).then((res) => {
         if (!res.ok) {
           throw new Error(`Clockwork API error: ${res.status}`);
         }
@@ -40,11 +42,12 @@ export async function POST(request: Request) {
 
     // Wait for all requests to complete
     const results = await Promise.all(searchPromises);
-    
+
     // Combine and deduplicate results
     const seenIds = new Set();
-    const combinedPeopleSearch = results.flatMap(r => r.peopleSearch || [])
-      .filter(person => {
+    const combinedPeopleSearch = results
+      .flatMap((r) => r.peopleSearch || [])
+      .filter((person) => {
         if (seenIds.has(person.id)) return false;
         seenIds.add(person.id);
         return true;
