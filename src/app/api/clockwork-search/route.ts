@@ -6,7 +6,7 @@ export async function POST(request: Request) {
     const { query, clockworkApiKey, firmApiKey, firmSlug } = body;
 
     const response = await fetch(
-      `https://api.clockworkrecruiting.com/v3.0/setpiecepeople_search?q=${encodeURIComponent(query)}`,
+      `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(query)}`,
       {
         headers: {
           'X-API-Key': clockworkApiKey,
