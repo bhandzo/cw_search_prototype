@@ -49,7 +49,7 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
               href={`https://${person.firmSlug}.clockworkrecruiting.com/firm/people/${person.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-muted-foreground underline hover:text-foreground"
             >
               View in Clockwork
             </a>
@@ -89,7 +89,7 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
                 <div>
                   <p className="text-sm text-muted-foreground">LinkedIn</p>
                   <a href={person.preferredLinkedinUrl} target="_blank" rel="noopener noreferrer" 
-                     className="text-blue-600 hover:underline">
+                     className="text-muted-foreground underline hover:text-foreground">
                     Profile
                   </a>
                 </div>
@@ -97,7 +97,7 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
               {person.preferredEmailAddress && (
                 <div>
                   <p className="text-sm text-muted-foreground">Email</p>
-                  <a href={`mailto:${person.preferredEmailAddress}`} className="text-blue-600 hover:underline">
+                  <a href={`mailto:${person.preferredEmailAddress}`} className="text-muted-foreground underline hover:text-foreground">
                     {person.preferredEmailAddress}
                   </a>
                 </div>
@@ -123,7 +123,7 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
                       href={`https://${person.firmSlug}.clockworkrecruiting.com/firm/companies#${position.companyId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
+                      className="text-muted-foreground underline hover:text-foreground"
                     >
                       {position.companyName}
                     </a>
