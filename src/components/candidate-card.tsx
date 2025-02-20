@@ -8,6 +8,7 @@ interface CandidateCardProps {
   person: any;
   keywords: string[];
   onSelect: (person: any) => void;
+  summarizing: boolean;
 }
 
 export function CandidateCard({ 
@@ -47,6 +48,12 @@ export function CandidateCard({
       {keywords.length > 0 && (
         <div className="mt-4 text-sm space-y-2">
           <h4 className="font-medium">Matched Content:</h4>
+          {summarizing && !person.shortSummary && (
+            <div className="mt-4 animate-pulse">
+              <div className="h-4 bg-secondary rounded w-3/4"></div>
+              <div className="h-4 bg-secondary rounded w-1/2 mt-2"></div>
+            </div>
+          )}
           <div className="space-y-1">
             {Object.entries(person).map(([key, value]) => {
               if (typeof value !== 'string') return null;

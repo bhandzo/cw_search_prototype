@@ -7,12 +7,21 @@ import { CandidateCard } from "@/components/candidate-card";
 import { ProfileDrawer } from "@/components/profile-drawer";
 
 export default function Home() {
+  type SearchStatus = 
+    | "generating-criteria"
+    | "searching-clockwork" 
+    | "fetching-notes"
+    | "summarizing"
+    | "complete"
+    | "error";
+
   interface SearchHistoryItem {
     query: string;
     timestamp: number;
     keywords?: Record<string, string[]>;
     resultCount?: number;
-    status: "pending" | "complete" | "error";
+    status: SearchStatus;
+    results?: any[];
   }
 
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
@@ -22,34 +31,39 @@ export default function Home() {
   const handleSearch = async (query: string, existingKeywords?: Record<string, string[]>) => {
     const timestamp = Date.now();
     setSearchHistory((prev) => [
+      { query, timestamp, status: "generating-criteria" },
       ...prev,
-      { query, timestamp, status: "pending" },
     ]);
 
     try {
-      // Get structured query from OpenAI
-      const openaiResponse = await fetch("/api/openai-search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userInput: query }),
-      });
-
       let keywords;
       if (existingKeywords) {
         keywords = existingKeywords;
       } else {
+        const openaiResponse = await fetch("/api/openai-search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userInput: query }),
+        });
         const response = await openaiResponse.json();
         keywords = JSON.parse(response.structuredQuery);
       }
 
-      // Get candidates from Clockwork
+      setSearchHistory((prev) =>
+        prev.map((item) =>
+          item.timestamp === timestamp
+            ? { ...item, keywords, status: "searching-clockwork" }
+            : item
+        )
+      );
+
       const clockworkResponse = await fetch("/api/clockwork-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           keywords,
           originalQuery: query,
-          credentials: JSON.parse(localStorage.getItem("credentials") || "{}")
+          credentials: JSON.parse(localStorage.getItem("credentials") || "{}"),
         }),
       });
 
@@ -66,9 +80,10 @@ export default function Home() {
           item.timestamp === timestamp
             ? {
                 ...item,
-                keywords: keywords,
+                keywords,
                 resultCount: results.length,
-                status: "complete",
+                results,
+                status: "summarizing",
               }
             : item
         )
