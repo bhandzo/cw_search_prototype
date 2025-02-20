@@ -74,10 +74,10 @@ export async function POST(request: Request) {
     // Sort by frequency and convert back to array
     const combinedPeopleSearch = Array.from(personFrequency.values())
       .sort((a, b) => b.count - a.count)
-      .map(({ person }) => ({
+      .map(({ person, count, matchedKeywords }) => ({
         ...person,
-        matchScore: personFrequency.get(person.id)?.count || 0,
-        matchedKeywords: Array.from(personFrequency.get(person.id)?.matchedKeywords || [])
+        matchScore: count,
+        matchedKeywords: Array.from(matchedKeywords)
       }));
 
     return NextResponse.json({ 
