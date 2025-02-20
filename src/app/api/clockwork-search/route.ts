@@ -16,8 +16,8 @@ export async function POST(request: Request) {
     console.log("Using auth key:", clockworkAuthKey);
     console.log(`Search keywords:`, keywords);
 
-    // Flatten keywords object into array
-    const keywordsList = Object.values(keywords).flat();
+    // Flatten keywords object into array while preserving multi-word keywords
+    const keywordsList = Object.values(keywords).flat().map(kw => kw.trim());
 
     // Track frequency of each person
     const personFrequency = new Map<string, { 
@@ -60,12 +60,22 @@ export async function POST(request: Request) {
         if (personFrequency.has(person.id)) {
           const entry = personFrequency.get(person.id)!;
           entry.count++;
-          entry.matchedKeywords.add(keyword);
+          // Only add the exact keyword that matched
+          if (person.name.toLowerCase().includes(keyword.toLowerCase()) ||
+              JSON.stringify(person).toLowerCase().includes(keyword.toLowerCase())) {
+            entry.matchedKeywords.add(keyword);
+          }
         } else {
+          // Check if this keyword actually matches before adding it
+          const matchedKeywords = new Set<string>();
+          if (person.name.toLowerCase().includes(keyword.toLowerCase()) ||
+              JSON.stringify(person).toLowerCase().includes(keyword.toLowerCase())) {
+            matchedKeywords.add(keyword);
+          }
           personFrequency.set(person.id, { 
             count: 1, 
             person,
-            matchedKeywords: new Set([keyword])
+            matchedKeywords
           });
         }
       });
