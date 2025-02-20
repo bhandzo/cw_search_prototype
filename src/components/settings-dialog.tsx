@@ -15,6 +15,7 @@ import { Settings } from "lucide-react";
 import { Credentials, SettingsFormData } from "@/types/settings";
 
 export function SettingsDialog() {
+  const [open, setOpen] = useState<boolean>(false);
   const [formData, setFormData] = useState<SettingsFormData>({
     firmSlug: "",
     firmApiKey: "",
