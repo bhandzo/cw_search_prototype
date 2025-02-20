@@ -1,4 +1,4 @@
- import { Person } from "@/types/clockwork";
+import { Person } from "@/types/clockwork";
 
 export type SearchStatus =
   | "generating-criteria"
@@ -12,8 +12,8 @@ export type SearchStatus =
 export interface SearchHistoryItem {
   query: string;
   timestamp: number;
+  status: SearchStatus;
   keywords?: Record<string, string[]>;
   resultCount?: number;
-  status: SearchStatus;
   results?: Person[];
 }
