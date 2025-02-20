@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
+import { Credentials } from "@/types/settings";
 
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const credentials = JSON.parse(localStorage.getItem("credentials") || "{}");
+    const credentials: Credentials = JSON.parse(
+      localStorage.getItem("credentials") || "{}"
+    );
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
 
-    if (!credentials) {
+    if (!firmSlug || !firmApiKey || !clockworkAuthKey) {
       throw new Error("No API credentials provided");
     }
 
