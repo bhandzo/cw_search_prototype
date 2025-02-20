@@ -1,6 +1,7 @@
 "use client";
 
 import { SearchBar } from "@/components/search-bar";
+import { EditableKeywords } from "@/components/editable-keywords";
 
 interface SearchHistoryItem {
   query: string;
