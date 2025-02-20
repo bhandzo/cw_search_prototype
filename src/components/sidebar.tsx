@@ -1,5 +1,7 @@
 "use client";
 
+import { SearchBar } from "@/components/search-bar";
+
 interface SearchHistoryItem {
   query: string;
   timestamp: number;
