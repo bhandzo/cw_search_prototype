@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Person } from "@/types/clockwork";
+import { Person, Note } from "@/types/clockwork";
 import { LoadingStatus } from "@/components/loading-status";
 import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
@@ -114,7 +114,7 @@ export default function Home() {
                     person.id === update.personId
                       ? {
                           ...person,
-                          notes: update.notes?.map((note: any) => ({
+                          notes: update.notes?.map((note: Note) => ({
                             ...note,
                             content: note.content
                               ?.replace(/<[^>]*>/g, "") // Remove HTML tags
@@ -160,6 +160,7 @@ export default function Home() {
         )
       );
     } catch (error) {
+      console.error("Error in search:", error);
       setSearchHistory((prev) =>
         prev.map((item) =>
           item.timestamp === timestamp ? { ...item, status: "error" } : item

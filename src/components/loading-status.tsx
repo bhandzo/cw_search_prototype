@@ -1,15 +1,24 @@
+// Define the SearchStatus type
+type SearchStatus =
+  | "generating-criteria"
+  | "searching-clockwork"
+  | "fetching-notes"
+  | "summarizing"
+  | "complete"
+  | "error";
+
 interface LoadingStatusProps {
   status: SearchStatus;
 }
 
 export function LoadingStatus({ status }: LoadingStatusProps) {
-  const statusMessages = {
-    "generating-criteria": "Analyzing search criteria...",
+  const statusMessages: Record<SearchStatus, string> = {
+    "generating-criteria": "Generating search criteria...",
     "searching-clockwork": "Searching for candidates...",
     "fetching-notes": "Retrieving candidate notes...",
-    "summarizing": "Generating candidate summaries...",
-    "complete": "Search complete",
-    "error": "Error occurred during search"
+    summarizing: "Generating candidate summaries...",
+    complete: "Search complete",
+    error: "Error occurred during search",
   };
 
   return (
