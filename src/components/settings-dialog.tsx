@@ -59,7 +59,8 @@ export function SettingsDialog() {
         firmSlug: process.env.NEXT_PUBLIC_FIRM_SLUG || '',
         firmApiKey: process.env.NEXT_PUBLIC_FIRM_API_KEY || '',
         clockworkAuthKey,
-        openaiApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || ''
+        openaiApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || '',
+        maxCandidates: 5
       };
       localStorage.setItem("credentials", JSON.stringify(devCredentials));
       setCredentials(devCredentials);
