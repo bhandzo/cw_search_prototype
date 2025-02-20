@@ -15,6 +15,7 @@ export default function Home() {
   }
 
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const [currentResults, setCurrentResults] = useState<any[]>([]);
 
   const handleSearch = async (query: string) => {
     const timestamp = Date.now();
@@ -47,6 +48,7 @@ export default function Home() {
 
       const clockworkData = await clockworkResponse.json();
 
+      setCurrentResults(clockworkData.peopleSearch);
       setSearchHistory((prev) =>
         prev.map((item) =>
           item.timestamp === timestamp
@@ -76,12 +78,12 @@ export default function Home() {
           <main className="flex-1 p-8 flex flex-col">
             <SearchBar onSearch={handleSearch} />
             <div className="mt-8 grid grid-cols-1 gap-4">
-              {searchHistory[0]?.status === "complete" && clockworkData?.peopleSearch.map((person: any) => (
+              {searchHistory[0]?.status === "complete" && currentResults.map((person) => (
                 <CandidateCard
-                  key={candidate.id}
-                  name={candidate.name}
-                  currentPosition={candidate.currentPosition}
-                  location={candidate.location}
+                  key={person.id}
+                  name={person.name}
+                  currentPosition={person.positions?.[0]?.title || 'Unknown'}
+                  location={person.preferredAddress || 'Unknown'}
                 />
               ))}
             </div>
