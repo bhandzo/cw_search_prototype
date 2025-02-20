@@ -29,21 +29,7 @@ The database supports searching across multiple fields, including:
 
 The search is executed through a query string parameter (q) that supports Boolean logic (AND, OR, NOT), exact phrases ("..."), and range queries (field:[NOW-5y TO NOW] for date ranges).
 
-Your task is to convert natural language job searches into structured query strings optimized for this system.
-
-### **Examples**
-**User Input:** "Senior engineers with at least 5 years of experience based in Los Angeles"
-**Output Query:**
-(primary_position:"Senior Engineer" OR positions.title:"Software Engineer" OR positions.title:"Engineering Manager")
-AND positions.startDate:[NOW-5y TO NOW]
-AND preferredAddress:"Los Angeles"
-
----
-**User Input:** "Marketing directors in fintech with growth experience"
-**Output Query:**
-(primary_position:"Marketing Director" OR positions.title:"Head of Growth" OR positions.title:"VP of Marketing")
-AND (biography:"growth marketing" OR biography:"fintech marketing")
-AND company_name:"Fintech"
+Your task is to convert natural language job searches into structured query strings optimized for this system. Try to be fairly broad with how you help the user find who they are looking for by using similar job titles, experience descriptions, or geographies (including nearby cities for example)
 
 ### **User Input**
 "${userInput}"
