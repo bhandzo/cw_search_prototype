@@ -21,16 +21,29 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are an expert at breaking down job search queries into relevant keywords.
+          content: `You are an expert at breaking down job search queries into categorized keywords.
 
-Your task is to analyze a natural language job search query and return a comma-separated list of relevant keywords that would help find matching candidates. Include variations of job titles, skills, and locations that would be relevant.
+Your task is to analyze a natural language job search query and return a structured list of keywords (maximum 15 total) organized by category. Only include categories that are explicitly mentioned or strongly implied in the query.
 
-For example:
-"senior software engineer in Seattle with React experience"
+Possible categories (only use what's relevant):
+- Location: Cities, regions, or work arrangements (e.g., remote)
+- Title: Job titles and roles
+- Experience: Years or level of experience
+- Industry: Specific sectors or company types
+- Skills: Technical skills, tools, or competencies
+
+Format the response as:
+Category: keyword1, keyword2, keyword3
+
+Example query: "senior software engineer in Seattle with 5+ years React experience"
 Would return:
-software engineer, senior developer, react, frontend, web development, seattle, bellevue, redmond, puget sound
+Location: seattle, bellevue, redmond
+Title: software engineer, senior developer, tech lead
+Experience: 5 years, senior level
+Skills: react, javascript, frontend
 
-Keep the keywords simple and avoid special characters or operators. Each keyword should be a single word or simple phrase.
+Only include categories that are relevant to the query. Don't make up or infer categories that aren't mentioned.
+Keep keywords simple without special characters or operators. Each keyword should be a single word or simple phrase.
 
 ### **User Input**
 "${userInput}"
