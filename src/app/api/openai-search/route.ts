@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || JSON.parse(localStorage.getItem("credentials") || "{}").openaiApiKey,
+  apiKey: process.env.OPENAI_API_KEY || (await (await fetch("/api/credentials")).json()).openaiApiKey,
 });
 
 function isFetchError(error: unknown): error is { response: Response } {

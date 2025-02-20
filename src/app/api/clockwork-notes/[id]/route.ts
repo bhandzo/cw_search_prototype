@@ -6,9 +6,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const credentials: Credentials = JSON.parse(
-      localStorage.getItem("credentials") || "{}"
-    );
+    const credentialsCookie = cookies().get("credentials");
+    if (!credentialsCookie) {
+      throw new Error("No credentials found");
+    }
+    const credentials: Credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
 
     if (!firmSlug || !firmApiKey || !clockworkAuthKey) {

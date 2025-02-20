@@ -45,7 +45,7 @@ export default function Home() {
         body: JSON.stringify({
           keywords,
           originalQuery: query,
-          credentials: JSON.parse(localStorage.getItem("credentials") || "{}"),
+          credentials: await (await fetch("/api/credentials")).json(),
         }),
       });
 

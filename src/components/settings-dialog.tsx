@@ -26,57 +26,38 @@ export function SettingsDialog() {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem("credentials");
-    if (stored) {
-      const parsedCredentials = JSON.parse(stored);
+    const loadCredentials = async () => {
+      try {
+        const response = await fetch("/api/credentials");
+        if (response.ok) {
+          const credentials = await response.json();
+          
+          let clockworkApiKey = "";
+          let clockworkApiSecret = "";
+          if (credentials.clockworkAuthKey) {
+            try {
+              const decoded = atob(credentials.clockworkAuthKey);
+              [clockworkApiKey, clockworkApiSecret] = decoded.split(":");
+            } catch (e) {
+              console.error("Error decoding clockwork auth key:", e);
+            }
+          }
 
-      // Decode the clockwork auth key to get back the original API key and secret
-      let clockworkApiKey = "";
-      let clockworkApiSecret = "";
-      if (parsedCredentials.clockworkAuthKey) {
-        try {
-          const decoded = atob(parsedCredentials.clockworkAuthKey);
-          [clockworkApiKey, clockworkApiSecret] = decoded.split(":");
-          console.log("Decoded credentials:", {
-            clockworkApiKey,
-            clockworkApiSecret,
+          setFormData({
+            firmSlug: credentials.firmSlug || "",
+            firmApiKey: credentials.firmApiKey || "",
+            clockworkApiKey: clockworkApiKey || "",
+            clockworkApiSecret: clockworkApiSecret || "",
+            openaiApiKey: credentials.openaiApiKey || "",
+            maxCandidates: credentials.maxCandidates || 5,
           });
-        } catch (e) {
-          console.error("Error decoding clockwork auth key:", e);
         }
+      } catch (error) {
+        console.error("Error loading credentials:", error);
       }
+    };
 
-      const newFormData = {
-        firmSlug: parsedCredentials.firmSlug || "",
-        firmApiKey: parsedCredentials.firmApiKey || "",
-        clockworkApiKey: clockworkApiKey || "",
-        clockworkApiSecret: clockworkApiSecret || "",
-        openaiApiKey: parsedCredentials.openaiApiKey || "",
-        maxCandidates: parsedCredentials.maxCandidates || 5,
-      };
-      console.log("Setting form data:", newFormData);
-      setFormData(newFormData);
-    } else if (process.env.NODE_ENV === "development") {
-      const clockworkAuthKey = btoa(
-        `${process.env.NEXT_PUBLIC_CLOCKWORK_PUBLIC_KEY}:${process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY}`
-      );
-      const devCredentials = {
-        firmSlug: process.env.NEXT_PUBLIC_FIRM_SLUG || "",
-        firmApiKey: process.env.NEXT_PUBLIC_FIRM_API_KEY || "",
-        clockworkAuthKey,
-        openaiApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || "",
-        maxCandidates: 5,
-      };
-      localStorage.setItem("credentials", JSON.stringify(devCredentials));
-      setFormData({
-        firmSlug: process.env.NEXT_PUBLIC_FIRM_SLUG || "",
-        firmApiKey: process.env.NEXT_PUBLIC_FIRM_API_KEY || "",
-        clockworkApiKey: process.env.NEXT_PUBLIC_CLOCKWORK_PUBLIC_KEY || "",
-        clockworkApiSecret: process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY || "",
-        openaiApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || "",
-        maxCandidates: 5
-      });
-    }
+    loadCredentials();
   }, []);
 
   const [error, setError] = useState<string | null>(null);
@@ -108,19 +89,29 @@ export function SettingsDialog() {
     };
 
     try {
-      // Validate credentials with a test request
-      const response = await fetch("/api/clockwork-search/validate", {
+      // Validate credentials first
+      const validateResponse = await fetch("/api/clockwork-search/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ credentials: credentialsToSave }),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
+      if (!validateResponse.ok) {
+        const data = await validateResponse.json();
         throw new Error(data.error || "Failed to validate credentials");
       }
 
-      localStorage.setItem("credentials", JSON.stringify(credentialsToSave));
+      // Save credentials if validation successful
+      const saveResponse = await fetch("/api/credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentialsToSave),
+      });
+
+      if (!saveResponse.ok) {
+        throw new Error("Failed to save credentials");
+      }
+
       setOpen(false);
     } catch (error) {
       setError(error instanceof Error ? error.message : "An unknown error occurred");
