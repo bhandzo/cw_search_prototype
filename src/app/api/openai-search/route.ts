@@ -1,21 +1,41 @@
 import { NextResponse } from "next/server";
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userInput, clockworkContext } = body;
+    const { userInput } = body;
 
-    // Mock structured query response
-    const mockResponse = {
-      structuredQuery: `primary_position:"Software Engineer" AND positions.startDate:[NOW-5y TO NOW] AND preferredAddress:"Remote" AND skills:"React" AND skills:"TypeScript"`,
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4-turbo-preview",
+      messages: [
+        {
+          role: "system",
+          content: "You are a search query builder. Convert natural language queries into Elasticsearch-style boolean queries. Only return the query string, nothing else."
+        },
+        {
+          role: "user",
+          content: userInput
+        }
+      ],
+      temperature: 0.1,
+    });
+
+    const structuredQuery = completion.choices[0].message.content;
+
+    return NextResponse.json({
+      structuredQuery,
       originalInput: userInput
-    };
-
-    return NextResponse.json(mockResponse);
+    });
   } catch (error) {
+    console.error('OpenAI API error:', error);
     return NextResponse.json(
-      { error: "Invalid request" },
-      { status: 400 }
+      { error: "Failed to process query" },
+      { status: 500 }
     );
   }
 }
