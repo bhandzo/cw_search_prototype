@@ -23,10 +23,7 @@ interface SidebarProps {
 export function Sidebar({ searchHistory, onSearch }: SidebarProps) {
   return (
     <div className="w-80 h-screen border-r p-4 space-y-4 overflow-y-auto">
-      <div className="space-y-4">
-        <SearchBar onSearch={onSearch} />
-        <h2 className="font-semibold">Search History</h2>
-      </div>
+      <h2 className="font-semibold">Search History</h2>
       <div className="space-y-2">
         {searchHistory.map((item) => (
           <div
@@ -70,16 +67,9 @@ export function Sidebar({ searchHistory, onSearch }: SidebarProps) {
                 </div>
               </div>
             )}
-            {item.candidates && item.candidates.length > 0 && (
-              <div className="text-sm text-muted-foreground space-y-2">
-                <div className="font-medium">Candidates:</div>
-                <div className="space-y-1">
-                  {item.candidates.map((candidate) => (
-                    <div key={candidate.id} className="text-sm">
-                      {candidate.name}
-                    </div>
-                  ))}
-                </div>
+            {item.resultCount !== undefined && (
+              <div className="text-sm text-muted-foreground">
+                Found {item.resultCount} candidates
               </div>
             )}
           </div>

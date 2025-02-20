@@ -10,12 +10,7 @@ export default function Home() {
     query: string;
     timestamp: number;
     structuredQuery?: string;
-    candidates?: Array<{
-      id: string;
-      name: string;
-      currentPosition: string;
-      location: string;
-    }>;
+    resultCount?: number;
     status: "pending" | "complete" | "error";
   }
 
@@ -58,12 +53,7 @@ export default function Home() {
             ? {
                 ...item,
                 structuredQuery: openaiData.structuredQuery,
-                candidates: clockworkData.peopleSearch.map((person: any) => ({
-                  id: person.id,
-                  name: person.name,
-                  currentPosition: person.positions?.[0]?.title || 'Unknown',
-                  location: person.preferredAddress || 'Unknown'
-                })),
+                resultCount: clockworkData.peopleSearch.length,
                 status: "complete",
               }
             : item
@@ -83,9 +73,10 @@ export default function Home() {
       {searchHistory.length > 0 ? (
         <>
           <Sidebar searchHistory={searchHistory} onSearch={handleSearch} />
-          <main className="flex-1 p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {searchHistory[0]?.candidates?.map((candidate) => (
+          <main className="flex-1 p-8 flex flex-col">
+            <SearchBar onSearch={handleSearch} />
+            <div className="mt-8 grid grid-cols-1 gap-4">
+              {searchHistory[0]?.status === "complete" && clockworkData?.peopleSearch.map((person: any) => (
                 <CandidateCard
                   key={candidate.id}
                   name={candidate.name}
