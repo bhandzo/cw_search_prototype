@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,9 +29,26 @@ interface ProfileDrawerProps {
 }
 
 export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
+  const [noteContent, setNoteContent] = useState<Record<string, string>>({});
+
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Present';
     return format(new Date(dateString), 'MMM yyyy');
+  };
+
+  const fetchNoteContent = async (noteId: string) => {
+    try {
+      const response = await fetch(`/api/clockwork-notes/${noteId}`);
+      if (!response.ok) throw new Error('Failed to fetch note');
+      const data = await response.json();
+      setNoteContent(prev => ({
+        ...prev,
+        [noteId]: data.content
+      }));
+    } catch (error) {
+      console.error('Error fetching note:', error);
+    }
   };
 
   if (!person) return null;
@@ -135,6 +153,48 @@ export function ProfileDrawer({ person, open, onClose }: ProfileDrawerProps) {
                         </span>
                       )}
                     </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notes Card */}
+          {person.notes && person.notes.length > 0 && (
+            <div className="p-4 border rounded-lg space-y-4">
+              <h3 className="font-semibold text-lg">Notes</h3>
+              <div className="space-y-4">
+                {person.notes.map((note: any) => (
+                  <div key={note.id} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-medium">{note.type}</span>
+                        <span className="text-sm text-muted-foreground ml-2">
+                          {format(new Date(note.createdAt), 'MMM d, yyyy')}
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setExpandedNoteId(expandedNoteId === note.id ? null : note.id);
+                          if (!noteContent[note.id]) {
+                            fetchNoteContent(note.id);
+                          }
+                        }}
+                      >
+                        {expandedNoteId === note.id ? 'Collapse' : 'Expand'}
+                      </Button>
+                    </div>
+                    {expandedNoteId === note.id && (
+                      <div className="mt-2 text-sm">
+                        {noteContent[note.id] ? (
+                          <div dangerouslySetInnerHTML={{ __html: noteContent[note.id] }} />
+                        ) : (
+                          <div className="text-muted-foreground">Loading...</div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
