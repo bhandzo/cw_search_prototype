@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     console.log("Received user input:", userInput);
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-2024-08-06",
+      model: "gpt-4-0125-preview",
       messages: [
         {
           role: "system",
@@ -62,15 +62,43 @@ Return only valid JSON without any extra text or explanations.`,
     });
 
     console.log("OpenAI API full response:", JSON.stringify(completion, null, 2));
-    console.log("OpenAI API choices:", JSON.stringify(completion.choices, null, 2));
     
-    const firstChoice = completion.choices?.[0];
+    // Validate response structure
+    if (!completion.choices || completion.choices.length === 0) {
+      console.error("No choices in completion response");
+      throw new Error("Invalid API response structure - no choices");
+    }
+
+    const firstChoice = completion.choices[0];
     console.log("First choice:", JSON.stringify(firstChoice, null, 2));
-    
-    const messageContent = firstChoice?.message?.content;
+
+    if (!firstChoice.message) {
+      console.error("No message in first choice");
+      throw new Error("Invalid API response structure - no message");
+    }
+
+    const messageContent = firstChoice.message.content;
     console.log("Message content:", messageContent);
 
-    const structuredQuery = messageContent?.trim();
+    if (!messageContent) {
+      console.error("No content in message");
+      throw new Error("Invalid API response structure - no content");
+    }
+
+    // Try parsing the content as JSON to validate it's properly formatted
+    let structuredQuery;
+    try {
+      // First trim any whitespace
+      const trimmedContent = messageContent.trim();
+      // Attempt to parse as JSON to validate format
+      JSON.parse(trimmedContent);
+      // If parse succeeds, use the trimmed content
+      structuredQuery = trimmedContent;
+    } catch (e) {
+      console.error("Failed to parse response as JSON:", e);
+      console.error("Raw content:", messageContent);
+      throw new Error("Invalid JSON in API response");
+    }
 
     if (!structuredQuery) {
       console.error("Structured query is null or undefined");
