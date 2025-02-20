@@ -30,7 +30,13 @@ export function CandidateCard({
         <h3 className="font-semibold text-lg">{name}</h3>
         {matchScore && (
           <span className="text-sm px-2 py-1 bg-secondary rounded">
-            Matched {matchScore} {matchScore === 1 ? 'keyword' : 'keywords'}
+            {person.matchedKeywords?.length > 0 ? (
+              <span title={person.matchedKeywords.join(', ')}>
+                Matched: {person.matchedKeywords.join(', ')}
+              </span>
+            ) : (
+              `Matched ${matchScore} ${matchScore === 1 ? 'keyword' : 'keywords'}`
+            )}
           </span>
         )}
       </div>

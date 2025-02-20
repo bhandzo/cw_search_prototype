@@ -20,7 +20,11 @@ export async function POST(request: Request) {
     const keywordsList = Object.values(keywords).flat();
 
     // Track frequency of each person
-    const personFrequency = new Map<string, { count: number; person: any }>();
+    const personFrequency = new Map<string, { 
+      count: number; 
+      person: any;
+      matchedKeywords: Set<string>;
+    }>();
 
     // Make requests for each keyword, getting first two pages
     const searchPromises = keywordsList.flatMap((keyword: string) => {
@@ -54,9 +58,15 @@ export async function POST(request: Request) {
     results.forEach(({ keyword, data }) => {
       (data.peopleSearch || []).forEach((person: any) => {
         if (personFrequency.has(person.id)) {
-          personFrequency.get(person.id)!.count++;
+          const entry = personFrequency.get(person.id)!;
+          entry.count++;
+          entry.matchedKeywords.add(keyword);
         } else {
-          personFrequency.set(person.id, { count: 1, person });
+          personFrequency.set(person.id, { 
+            count: 1, 
+            person,
+            matchedKeywords: new Set([keyword])
+          });
         }
       });
     });
@@ -66,7 +76,8 @@ export async function POST(request: Request) {
       .sort((a, b) => b.count - a.count)
       .map(({ person }) => ({
         ...person,
-        matchScore: personFrequency.get(person.id)?.count || 0
+        matchScore: personFrequency.get(person.id)?.count || 0,
+        matchedKeywords: Array.from(personFrequency.get(person.id)?.matchedKeywords || [])
       }));
 
     return NextResponse.json({ 
