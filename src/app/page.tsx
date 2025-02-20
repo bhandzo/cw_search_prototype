@@ -50,14 +50,6 @@ export default function Home() {
         keywords = JSON.parse(response.structuredQuery);
       }
 
-      setSearchHistory((prev) =>
-        prev.map((item) =>
-          item.timestamp === timestamp
-            ? { ...item, keywords, status: "searching-clockwork" }
-            : item
-        )
-      );
-
       const clockworkResponse = await fetch("/api/clockwork-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,56 +64,81 @@ export default function Home() {
         throw new Error('Failed to fetch candidates');
       }
 
-      const clockworkData = await clockworkResponse.json();
-      const results = clockworkData.peopleSearch || [];
+      const reader = clockworkResponse.body?.getReader();
+      if (!reader) {
+        throw new Error('No response body');
+      }
 
-      // Show initial results immediately
-      setCurrentResults(results);
-      setSearchHistory((prev) =>
-        prev.map((item) =>
-          item.timestamp === timestamp
-            ? {
-                ...item,
-                keywords,
-                resultCount: results.length,
-                results,
-                status: "summarizing"
-              }
-            : item
-        )
-      );
+      const decoder = new TextDecoder();
+      let buffer = '';
 
-      // Process summaries in batches
-      const BATCH_SIZE = 3;
-      for (let i = 0; i < results.length; i += BATCH_SIZE) {
-        const batch = results.slice(i, i + BATCH_SIZE);
-        const summaryPromises = batch.map(person => 
-          fetch("/api/openai-summary", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              person,
-              originalQuery: query,
-              keywords: Object.values(keywords).flat()
-            })
-          }).then(res => res.json())
-        );
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-        const summaries = await Promise.all(summaryPromises);
-        
-        setCurrentResults(prev => 
-          prev.map(person => {
-            const summary = summaries.find(s => s.personId === person.id);
-            if (summary) {
-              return {
-                ...person,
-                shortSummary: summary.shortSummary,
-                longSummary: summary.longSummary
-              };
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          
+          try {
+            const update = JSON.parse(line);
+            
+            switch (update.type) {
+              case 'initial':
+                setCurrentResults(update.peopleSearch);
+                setSearchHistory((prev) =>
+                  prev.map((item) =>
+                    item.timestamp === timestamp
+                      ? {
+                          ...item,
+                          keywords,
+                          resultCount: update.peopleSearch.length,
+                          results: update.peopleSearch,
+                          status: "fetching-notes"
+                        }
+                      : item
+                  )
+                );
+                break;
+
+              case 'notes':
+                setCurrentResults(prev =>
+                  prev.map(person =>
+                    person.id === update.personId
+                      ? { ...person, notes: update.notes }
+                      : person
+                  )
+                );
+                setSearchHistory((prev) =>
+                  prev.map((item) =>
+                    item.timestamp === timestamp
+                      ? { ...item, status: "summarizing" }
+                      : item
+                  )
+                );
+                break;
+
+              case 'summary':
+                setCurrentResults(prev =>
+                  prev.map(person =>
+                    person.id === update.personId
+                      ? {
+                          ...person,
+                          shortSummary: update.shortSummary,
+                          longSummary: update.longSummary
+                        }
+                      : person
+                  )
+                );
+                break;
             }
-            return person;
-          })
-        );
+          } catch (e) {
+            console.error('Error parsing update:', e);
+          }
+        }
       }
 
       // Mark search as complete
