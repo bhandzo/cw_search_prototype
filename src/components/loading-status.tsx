@@ -1,11 +1,4 @@
-// Define the SearchStatus type
-type SearchStatus =
-  | "generating-criteria"
-  | "searching-clockwork"
-  | "fetching-notes"
-  | "summarizing"
-  | "complete"
-  | "error";
+import { SearchStatus } from "@/types/search";
 
 interface LoadingStatusProps {
   status: SearchStatus;
@@ -16,9 +9,10 @@ export function LoadingStatus({ status }: LoadingStatusProps) {
     "generating-criteria": "Generating search criteria...",
     "searching-clockwork": "Searching for candidates...",
     "fetching-notes": "Retrieving candidate notes...",
-    summarizing: "Generating candidate summaries...",
-    complete: "Search complete",
-    error: "Error occurred during search",
+    "summarizing": "Generating candidate summaries...",
+    "complete": "Search complete",
+    "error": "Error occurred during search",
+    "pending": "Processing..."
   };
 
   return (

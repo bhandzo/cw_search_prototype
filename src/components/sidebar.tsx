@@ -2,16 +2,8 @@
 
 import { SearchBar } from "@/components/search-bar";
 import { EditableKeywords } from "@/components/editable-keywords";
-
 import { Person } from "@/types/clockwork";
-
-interface SearchHistoryItem {
-  query: string;
-  timestamp: number;
-  keywords?: Record<string, string[]>;
-  candidates?: Person[];
-  status: 'pending' | 'complete' | 'error';
-}
+import { SearchHistoryItem } from "@/types/search";
 
 interface SidebarProps {
   searchHistory: SearchHistoryItem[];

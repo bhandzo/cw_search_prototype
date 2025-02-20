@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Person, Note } from "@/types/clockwork";
+import { Person } from "@/types/clockwork";
+import { SearchStatus, SearchHistoryItem } from "@/types/search";
 import { LoadingStatus } from "@/components/loading-status";
 import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
@@ -9,22 +10,6 @@ import { CandidateCard } from "@/components/candidate-card";
 import { ProfileDrawer } from "@/components/profile-drawer";
 
 export default function Home() {
-  type SearchStatus =
-    | "generating-criteria"
-    | "searching-clockwork"
-    | "fetching-notes"
-    | "summarizing"
-    | "complete"
-    | "error";
-
-  interface SearchHistoryItem {
-    query: string;
-    timestamp: number;
-    keywords?: Record<string, string[]>;
-    resultCount?: number;
-    status: SearchStatus;
-    results?: Person[];
-  }
 
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [currentResults, setCurrentResults] = useState<Person[]>([]);
