@@ -16,16 +16,28 @@ import { Settings } from "lucide-react";
 interface Credentials {
   firmSlug: string;
   firmApiKey: string;
+  clockworkAuthKey: string;
+}
+
+interface FormData {
+  firmSlug: string;
+  firmApiKey: string;
   clockworkApiKey: string;
   clockworkApiSecret: string;
 }
 
 export function SettingsDialog() {
-  const [credentials, setCredentials] = useState<Credentials>({
+  const [formData, setFormData] = useState<FormData>({
     firmSlug: "",
     firmApiKey: "",
     clockworkApiKey: "",
     clockworkApiSecret: "",
+  });
+
+  const [credentials, setCredentials] = useState<Credentials>({
+    firmSlug: "",
+    firmApiKey: "",
+    clockworkAuthKey: "",
   });
   const [open, setOpen] = useState(false);
 
@@ -40,8 +52,18 @@ export function SettingsDialog() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem("credentials", JSON.stringify(credentials));
-    // Clear any search history here when implemented
+    
+    // Create base64 encoded auth key from API key and secret
+    const clockworkAuthKey = btoa(`${formData.clockworkApiKey}:${formData.clockworkApiSecret}`);
+    
+    const credentialsToSave = {
+      firmSlug: formData.firmSlug,
+      firmApiKey: formData.firmApiKey,
+      clockworkAuthKey
+    };
+
+    localStorage.setItem("credentials", JSON.stringify(credentialsToSave));
+    setCredentials(credentialsToSave);
     setOpen(false);
   };
 
@@ -61,9 +83,9 @@ export function SettingsDialog() {
             <Label htmlFor="firmSlug">Firm Slug</Label>
             <Input
               id="firmSlug"
-              value={credentials.firmSlug}
+              value={formData.firmSlug}
               onChange={(e) =>
-                setCredentials({ ...credentials, firmSlug: e.target.value })
+                setFormData({ ...formData, firmSlug: e.target.value })
               }
               required
             />
@@ -73,9 +95,9 @@ export function SettingsDialog() {
             <Input
               id="firmApiKey"
               type="password"
-              value={credentials.firmApiKey}
+              value={formData.firmApiKey}
               onChange={(e) =>
-                setCredentials({ ...credentials, firmApiKey: e.target.value })
+                setFormData({ ...formData, firmApiKey: e.target.value })
               }
               required
             />
@@ -85,9 +107,9 @@ export function SettingsDialog() {
             <Input
               id="clockworkApiKey"
               type="password"
-              value={credentials.clockworkApiKey}
+              value={formData.clockworkApiKey}
               onChange={(e) =>
-                setCredentials({ ...credentials, clockworkApiKey: e.target.value })
+                setFormData({ ...formData, clockworkApiKey: e.target.value })
               }
               required
             />
@@ -97,10 +119,10 @@ export function SettingsDialog() {
             <Input
               id="clockworkApiSecret"
               type="password"
-              value={credentials.clockworkApiSecret}
+              value={formData.clockworkApiSecret}
               onChange={(e) =>
-                setCredentials({
-                  ...credentials,
+                setFormData({
+                  ...formData,
                   clockworkApiSecret: e.target.value,
                 })
               }
