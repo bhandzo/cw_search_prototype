@@ -17,6 +17,7 @@ interface Credentials {
   firmSlug: string;
   firmApiKey: string;
   clockworkAuthKey: string;
+  openaiApiKey?: string;
 }
 
 interface FormData {
@@ -24,6 +25,7 @@ interface FormData {
   firmApiKey: string;
   clockworkApiKey: string;
   clockworkApiSecret: string;
+  openaiApiKey: string;
 }
 
 export function SettingsDialog() {
@@ -32,6 +34,7 @@ export function SettingsDialog() {
     firmApiKey: "",
     clockworkApiKey: "",
     clockworkApiSecret: "",
+    openaiApiKey: "",
   });
 
   const [credentials, setCredentials] = useState<Credentials>({
@@ -44,14 +47,23 @@ export function SettingsDialog() {
   useEffect(() => {
     const stored = localStorage.getItem("credentials");
     if (stored) {
-      setCredentials(JSON.parse(stored));
+      const parsedCredentials = JSON.parse(stored);
+      setCredentials(parsedCredentials);
+      setFormData({
+        firmSlug: parsedCredentials.firmSlug || '',
+        firmApiKey: parsedCredentials.firmApiKey || '',
+        clockworkApiKey: '', // We don't store these directly
+        clockworkApiSecret: '',
+        openaiApiKey: parsedCredentials.openaiApiKey || ''
+      });
     } else if (process.env.NODE_ENV === 'development') {
       // In development, use environment variables
       const clockworkAuthKey = btoa(`${process.env.NEXT_PUBLIC_CLOCKWORK_PUBLIC_KEY}:${process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY}`);
       const devCredentials = {
         firmSlug: process.env.NEXT_PUBLIC_FIRM_SLUG || '',
         firmApiKey: process.env.NEXT_PUBLIC_FIRM_API_KEY || '',
-        clockworkAuthKey
+        clockworkAuthKey,
+        openaiApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || ''
       };
       localStorage.setItem("credentials", JSON.stringify(devCredentials));
       setCredentials(devCredentials);
@@ -60,6 +72,7 @@ export function SettingsDialog() {
         firmApiKey: process.env.NEXT_PUBLIC_FIRM_API_KEY || '',
         clockworkApiKey: process.env.NEXT_PUBLIC_CLOCKWORK_PUBLIC_KEY || '',
         clockworkApiSecret: process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY || '',
+        openaiApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || ''
       });
     } else {
       setOpen(true); // Automatically open if no credentials exist in production
@@ -84,7 +97,8 @@ export function SettingsDialog() {
     const credentialsToSave = {
       firmSlug: formData.firmSlug,
       firmApiKey: formData.firmApiKey,
-      clockworkAuthKey
+      clockworkAuthKey,
+      openaiApiKey: formData.openaiApiKey
     };
 
     try {
@@ -174,6 +188,17 @@ export function SettingsDialog() {
           )}
           <div className="text-sm text-muted-foreground mt-2 mb-4">
             You can get your firm API key and public/secret key pair from your profile in Clockwork
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="openaiApiKey">OpenAI API Key</Label>
+            <Input
+              id="openaiApiKey"
+              value={formData.openaiApiKey}
+              onChange={(e) =>
+                setFormData({ ...formData, openaiApiKey: e.target.value })
+              }
+              required
+            />
           </div>
           <Button type="submit" className="w-full" disabled={isValidating}>
             {isValidating ? "Validating..." : "Save"}
