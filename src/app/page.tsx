@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
 import { CandidateCard } from "@/components/candidate-card";
@@ -10,7 +10,7 @@ export default function Home() {
   interface SearchHistoryItem {
     query: string;
     timestamp: number;
-    structuredQuery?: string;
+    keywords?: Record<string, string[]>;
     resultCount?: number;
     status: "pending" | "complete" | "error";
   }
@@ -34,14 +34,15 @@ export default function Home() {
         body: JSON.stringify({ userInput: query }),
       });
 
-      const openaiData = await openaiResponse.json();
+      const { structuredQuery } = await openaiResponse.json();
+      const keywords = JSON.parse(structuredQuery);
 
       // Get candidates from Clockwork
       const clockworkResponse = await fetch("/api/clockwork-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          query: openaiData.structuredQuery,
+          keywords,
           credentials: JSON.parse(localStorage.getItem("credentials") || "{}")
         }),
       });
@@ -54,7 +55,7 @@ export default function Home() {
           item.timestamp === timestamp
             ? {
                 ...item,
-                structuredQuery: openaiData.structuredQuery,
+                keywords: JSON.parse(structuredQuery),
                 resultCount: clockworkData.peopleSearch.length,
                 status: "complete",
               }
@@ -79,14 +80,10 @@ export default function Home() {
             <SearchBar onSearch={handleSearch} />
             <div className="mt-8 grid grid-cols-1 gap-4">
               {searchHistory[0]?.status === "complete" && currentResults.map((person) => {
-                const keywords = searchHistory[0]?.structuredQuery
-                  ?.split('\n')
-                  .flatMap(line => {
-                    const [, keywordList] = line.split(':');
-                    return keywordList ? keywordList.split(',').map(k => k.trim()) : [];
-                  })
-                  .filter(Boolean) || [];
-
+                const keywords = searchHistory[0]?.keywords
+                  ? Object.values(searchHistory[0].keywords).flat()
+                  : [];
+                
                 return (
                   <CandidateCard
                     key={person.id}

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { query, credentials } = body;
+    const { keywords, credentials } = body;
 
     if (!credentials) {
       console.error("No API credentials provided");
@@ -16,14 +16,14 @@ export async function POST(request: Request) {
     console.log("Using auth key:", clockworkAuthKey);
     console.log(`Search query: ${query}`);
 
-    // Split the comma-separated keywords
-    const keywords = query.split(",").map((k: string) => k.trim());
+    // Flatten keywords object into array
+    const keywordsList = Object.values(keywords).flat();
 
     // Track frequency of each person
     const personFrequency = new Map<string, { count: number; person: any }>();
 
     // Make requests for each keyword, getting first two pages
-    const searchPromises = keywords.flatMap((keyword: string) => {
+    const searchPromises = keywordsList.flatMap((keyword: string) => {
       const pages = [1, 2];
       return pages.map((page) =>
         fetch(

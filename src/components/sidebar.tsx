@@ -5,7 +5,7 @@ import { SearchBar } from "@/components/search-bar";
 interface SearchHistoryItem {
   query: string;
   timestamp: number;
-  structuredQuery?: string;
+  keywords?: Record<string, string[]>;
   candidates?: Array<{
     id: string;
     name: string;
@@ -37,16 +37,14 @@ export function Sidebar({ searchHistory, onSearch }: SidebarProps) {
             {item.status === 'error' && (
               <div className="text-sm text-destructive">Error processing query</div>
             )}
-            {item.structuredQuery && (
+            {item.keywords && (
               <div className="text-sm text-muted-foreground space-y-2">
-                <div className="font-medium">Search Keywords:</div>
-                <div className="font-mono text-xs bg-muted p-2 rounded whitespace-pre-wrap break-all">
-                  {item.structuredQuery.split(',').map((keyword, i) => (
-                    <div key={i} className="inline-block m-1 px-2 py-1 bg-secondary rounded">
-                      {keyword.trim()}
-                    </div>
-                  ))}
-                </div>
+                <EditableKeywords 
+                  keywords={item.keywords}
+                  onUpdate={(updatedKeywords) => {
+                    onSearch(item.query);
+                  }}
+                />
               </div>
             )}
             {item.resultCount !== undefined && (
