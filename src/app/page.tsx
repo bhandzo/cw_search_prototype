@@ -47,16 +47,21 @@ export default function Home() {
         }),
       });
 
-      const clockworkData = await clockworkResponse.json();
+      if (!clockworkResponse.ok) {
+        throw new Error('Failed to fetch candidates');
+      }
 
-      setCurrentResults(clockworkData.peopleSearch);
+      const clockworkData = await clockworkResponse.json();
+      const results = clockworkData.peopleSearch || [];
+
+      setCurrentResults(results);
       setSearchHistory((prev) =>
         prev.map((item) =>
           item.timestamp === timestamp
             ? {
                 ...item,
                 keywords: JSON.parse(structuredQuery),
-                resultCount: clockworkData.peopleSearch.length,
+                resultCount: results.length,
                 status: "complete",
               }
             : item

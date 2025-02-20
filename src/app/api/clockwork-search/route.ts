@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
     console.log(`Making Clockwork API request for firm: ${firmSlug}`);
     console.log("Using auth key:", clockworkAuthKey);
-    console.log(`Search query: ${query}`);
+    console.log(`Search keywords:`, keywords);
 
     // Flatten keywords object into array
     const keywordsList = Object.values(keywords).flat();
@@ -69,7 +69,10 @@ export async function POST(request: Request) {
         matchScore: personFrequency.get(person.id)?.count || 0
       }));
 
-    return NextResponse.json({ peopleSearch: combinedPeopleSearch });
+    return NextResponse.json({ 
+      peopleSearch: combinedPeopleSearch || [],
+      total: combinedPeopleSearch?.length || 0 
+    });
   } catch (error) {
     console.error("Clockwork API error:", error);
     return NextResponse.json(
