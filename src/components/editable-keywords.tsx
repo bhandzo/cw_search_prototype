@@ -1,14 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Pencil, Plus, ChevronDown } from "lucide-react";
+import { X, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface EditableKeywordsProps {
   keywords: Record<string, string[]>;
@@ -148,27 +142,23 @@ export function EditableKeywords({ keywords, onUpdate }: EditableKeywordsProps) 
       {isEditing && (
         <>
           {availableCategories.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full mt-4 text-muted-foreground"
-                >
-                  Add categories <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-full">
-                {availableCategories.map((category) => (
-                  <DropdownMenuItem
-                    key={category}
-                    onClick={() => handleAddCategory(category)}
-                  >
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <select
+              className="w-full mt-4 p-2 rounded-md border bg-background text-sm"
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleAddCategory(e.target.value);
+                  e.target.value = ''; // Reset select after choosing
+                }
+              }}
+              value=""
+            >
+              <option value="">Add category...</option>
+              {availableCategories.map((category) => (
+                <option key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </option>
+              ))}
+            </select>
           )}
           <Button 
             className="w-full mt-2" 
