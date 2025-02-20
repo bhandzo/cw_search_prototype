@@ -42,12 +42,8 @@ export function CandidateCard({
       {/* Summaries Section */}
       {(person.shortSummary || person.longSummary) && (
         <div className="mt-4 space-y-2">
-          {person.shortSummary && (
-            <p className="text-sm">{person.shortSummary}</p>
-          )}
-          {person.longSummary && (
-            <p className="text-sm text-muted-foreground">{person.longSummary}</p>
-          )}
+          <p className="text-sm">{person.shortSummary}</p>
+          <p className="text-sm text-muted-foreground">{person.longSummary}</p>
         </div>
       )}
       
