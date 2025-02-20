@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     console.log("Received user input:", userInput);
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo-preview",
+      model: "gpt-4o-2024-08-06",
       messages: [
         {
           role: "system",
