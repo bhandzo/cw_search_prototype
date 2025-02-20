@@ -19,39 +19,55 @@ export async function POST(request: Request) {
     // Split the comma-separated keywords
     const keywords = query.split(",").map((k: string) => k.trim());
 
-    // Make a request for each keyword
-    const searchPromises = keywords.map((keyword: string) =>
-      fetch(
-        `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(
-          keyword
-        )}`,
-        {
-          headers: {
-            "X-API-Key": firmApiKey,
-            Accept: "application/json",
-            Authorization: `Bearer ${clockworkAuthKey}`,
-          },
-        }
-      ).then((res) => {
-        if (!res.ok) {
-          throw new Error(`Clockwork API error: ${res.status}`);
-        }
-        return res.json();
-      })
-    );
+    // Track frequency of each person
+    const personFrequency = new Map<string, { count: number; person: any }>();
+
+    // Make requests for each keyword, getting first two pages
+    const searchPromises = keywords.flatMap((keyword: string) => {
+      const pages = [1, 2];
+      return pages.map((page) =>
+        fetch(
+          `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(
+            keyword
+          )}&page=${page}`,
+          {
+            headers: {
+              "X-API-Key": firmApiKey,
+              Accept: "application/json",
+              Authorization: `Bearer ${clockworkAuthKey}`,
+            },
+          }
+        ).then(async (res) => {
+          if (!res.ok) {
+            throw new Error(`Clockwork API error: ${res.status}`);
+          }
+          const data = await res.json();
+          return { keyword, data };
+        })
+      );
+    });
 
     // Wait for all requests to complete
     const results = await Promise.all(searchPromises);
 
-    // Combine and deduplicate results
-    const seenIds = new Set();
-    const combinedPeopleSearch = results
-      .flatMap((r) => r.peopleSearch || [])
-      .filter((person) => {
-        if (seenIds.has(person.id)) return false;
-        seenIds.add(person.id);
-        return true;
+    // Process results and count frequencies
+    results.forEach(({ keyword, data }) => {
+      (data.peopleSearch || []).forEach((person: any) => {
+        if (personFrequency.has(person.id)) {
+          personFrequency.get(person.id)!.count++;
+        } else {
+          personFrequency.set(person.id, { count: 1, person });
+        }
       });
+    });
+
+    // Sort by frequency and convert back to array
+    const combinedPeopleSearch = Array.from(personFrequency.values())
+      .sort((a, b) => b.count - a.count)
+      .map(({ person }) => ({
+        ...person,
+        matchScore: personFrequency.get(person.id)?.count || 0
+      }));
 
     return NextResponse.json({ peopleSearch: combinedPeopleSearch });
   } catch (error) {

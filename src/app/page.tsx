@@ -82,6 +82,7 @@ export default function Home() {
                   name={person.name}
                   currentPosition={person.positions?.[0]?.title || 'Unknown'}
                   location={person.preferredAddress || 'Unknown'}
+                  matchScore={person.matchScore}
                 />
               ))}
             </div>
