@@ -68,13 +68,13 @@ export function SettingsDialog() {
         maxCandidates: 5,
       };
       localStorage.setItem("credentials", JSON.stringify(devCredentials));
-      setCredentials(devCredentials);
       setFormData({
         firmSlug: process.env.NEXT_PUBLIC_FIRM_SLUG || "",
         firmApiKey: process.env.NEXT_PUBLIC_FIRM_API_KEY || "",
         clockworkApiKey: process.env.NEXT_PUBLIC_CLOCKWORK_PUBLIC_KEY || "",
         clockworkApiSecret: process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY || "",
         openaiApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY || "",
+        maxCandidates: 5
       });
     }
   }, []);
