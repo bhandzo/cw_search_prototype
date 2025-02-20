@@ -3,9 +3,18 @@ interface CandidateCardProps {
   currentPosition: string;
   location: string;
   matchScore?: number;
+  person: any;
+  keywords: string[];
 }
 
-export function CandidateCard({ name, currentPosition, location, matchScore }: CandidateCardProps) {
+export function CandidateCard({ 
+  name, 
+  currentPosition, 
+  location, 
+  matchScore,
+  person,
+  keywords 
+}: CandidateCardProps) {
   return (
     <div className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow bg-white">
       <div className="flex justify-between items-start">
@@ -18,6 +27,38 @@ export function CandidateCard({ name, currentPosition, location, matchScore }: C
       </div>
       <p className="text-sm text-muted-foreground mt-1">{currentPosition}</p>
       <p className="text-sm text-muted-foreground">{location}</p>
+      
+      {keywords.length > 0 && (
+        <div className="mt-4 text-sm space-y-2">
+          <h4 className="font-medium">Matched Content:</h4>
+          <div className="space-y-1">
+            {Object.entries(person).map(([key, value]) => {
+              if (typeof value !== 'string') return null;
+              
+              const matchedKeywords = keywords.filter(keyword => 
+                value.toLowerCase().includes(keyword.toLowerCase())
+              );
+              
+              if (matchedKeywords.length === 0) return null;
+              
+              let highlightedText = value;
+              matchedKeywords.forEach(keyword => {
+                const regex = new RegExp(`(${keyword})`, 'gi');
+                highlightedText = highlightedText.replace(regex, '**$1**');
+              });
+              
+              return (
+                <div key={key}>
+                  <span className="italic">{key}:</span>{' '}
+                  <span dangerouslySetInnerHTML={{ 
+                    __html: highlightedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  }} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

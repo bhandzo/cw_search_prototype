@@ -76,14 +76,26 @@ export default function Home() {
           <main className="flex-1 p-8 flex flex-col">
             <SearchBar onSearch={handleSearch} />
             <div className="mt-8 grid grid-cols-1 gap-4">
-              {searchHistory[0]?.status === "complete" && currentResults.map((person) => (
-                <CandidateCard
-                  key={person.id}
-                  name={person.name}
-                  currentPosition={person.positions?.[0]?.title || 'Unknown'}
-                  location={person.preferredAddress || 'Unknown'}
-                  matchScore={person.matchScore}
-                />
+              {searchHistory[0]?.status === "complete" && currentResults.map((person) => {
+                const keywords = searchHistory[0]?.structuredQuery
+                  ?.split('\n')
+                  .flatMap(line => {
+                    const [, keywordList] = line.split(':');
+                    return keywordList ? keywordList.split(',').map(k => k.trim()) : [];
+                  })
+                  .filter(Boolean) || [];
+
+                return (
+                  <CandidateCard
+                    key={person.id}
+                    name={person.name}
+                    currentPosition={person.positions?.[0]?.title || 'Unknown'}
+                    location={person.preferredAddress || 'Unknown'}
+                    matchScore={person.matchScore}
+                    person={person}
+                    keywords={keywords}
+                  />
+                );
               ))}
             </div>
           </main>
