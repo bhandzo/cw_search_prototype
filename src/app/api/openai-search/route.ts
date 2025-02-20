@@ -7,12 +7,7 @@ export async function POST(request: Request) {
 
     // Mock structured query response
     const mockResponse = {
-      structuredQuery: {
-        role: "Software Engineer",
-        skills: ["React", "TypeScript"],
-        location: "Remote",
-        experience: "5+ years"
-      },
+      structuredQuery: `primary_position:"Software Engineer" AND positions.startDate:[NOW-5y TO NOW] AND preferredAddress:"Remote" AND skills:"React" AND skills:"TypeScript"`,
       originalInput: userInput
     };
 

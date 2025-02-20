@@ -3,12 +3,13 @@
 interface SearchHistoryItem {
   query: string;
   timestamp: number;
-  structuredQuery?: {
-    role?: string;
-    skills?: string[];
-    location?: string;
-    experience?: string;
-  };
+  structuredQuery?: string;
+  candidates?: Array<{
+    id: string;
+    name: string;
+    currentPosition: string;
+    location: string;
+  }>;
   status: 'pending' | 'complete' | 'error';
 }
 

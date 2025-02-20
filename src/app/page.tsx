@@ -9,6 +9,12 @@ export default function Home() {
     query: string;
     timestamp: number;
     structuredQuery?: string;
+    candidates?: Array<{
+      id: string;
+      name: string;
+      currentPosition: string;
+      location: string;
+    }>;
     status: 'pending' | 'complete' | 'error';
   }
 
