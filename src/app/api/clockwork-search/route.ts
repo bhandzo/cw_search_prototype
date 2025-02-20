@@ -2,12 +2,9 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-type SummaryData = object; // or use `unknown` if you prefer
-
-// Define a type for the keywords object
-type Keywords = Record<string, string[]>;
-
 import { Person } from "@/types/clockwork";
+
+type SummaryData = Record<string, unknown>;
 
 async function saveSummaryToFile(personId: string, summaryData: SummaryData) {
   if (process.env.NODE_ENV === "development") {
