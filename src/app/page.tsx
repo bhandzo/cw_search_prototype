@@ -75,6 +75,7 @@ export default function Home() {
       const clockworkData = await clockworkResponse.json();
       const results = clockworkData.peopleSearch || [];
 
+      // Show initial results immediately
       setCurrentResults(results);
       setSearchHistory((prev) =>
         prev.map((item) =>
@@ -84,7 +85,7 @@ export default function Home() {
                 keywords,
                 resultCount: results.length,
                 results,
-                status: "summarizing",
+                status: "summarizing"
               }
             : item
         )
@@ -151,7 +152,7 @@ export default function Home() {
               <LoadingStatus status={searchHistory[0].status} />
             </div>
             <div className="mt-8 grid grid-cols-1 gap-4">
-              {searchHistory[0]?.status === "complete" && currentResults.map((person) => {
+              {currentResults.map((person) => {
                 const keywords = searchHistory[0]?.keywords
                   ? Object.values(searchHistory[0].keywords).flat()
                   : [];
@@ -166,7 +167,7 @@ export default function Home() {
                     person={person}
                     keywords={keywords}
                     onSelect={setSelectedPerson}
-                    summarizing={searchHistory[0].status === "summarizing" && !person.shortSummary}
+                    summarizing={searchHistory[0].status === "summarizing"}
                   />
                 );
               })}
