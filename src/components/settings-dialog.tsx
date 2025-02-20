@@ -50,8 +50,13 @@ export function SettingsDialog() {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [error, setError] = useState<string | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setIsValidating(true);
     
     // Create base64 encoded auth key from API key and secret
     const clockworkAuthKey = btoa(`${formData.clockworkApiKey}:${formData.clockworkApiSecret}`);
@@ -62,9 +67,27 @@ export function SettingsDialog() {
       clockworkAuthKey
     };
 
-    localStorage.setItem("credentials", JSON.stringify(credentialsToSave));
-    setCredentials(credentialsToSave);
-    setOpen(false);
+    try {
+      // Validate credentials with a test request
+      const response = await fetch("/api/clockwork-search/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credentials: credentialsToSave }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to validate credentials');
+      }
+
+      localStorage.setItem("credentials", JSON.stringify(credentialsToSave));
+      setCredentials(credentialsToSave);
+      setOpen(false);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (
@@ -129,8 +152,11 @@ export function SettingsDialog() {
               required
             />
           </div>
-          <Button type="submit" className="w-full">
-            Save
+          {error && (
+            <div className="text-sm text-destructive">{error}</div>
+          )}
+          <Button type="submit" className="w-full" disabled={isValidating}>
+            {isValidating ? "Validating..." : "Save"}
           </Button>
         </form>
       </DialogContent>
