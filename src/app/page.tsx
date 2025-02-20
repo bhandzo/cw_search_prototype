@@ -22,12 +22,14 @@ export default function Home() {
     keywords?: Record<string, string[]>;
     resultCount?: number;
     status: SearchStatus;
-    results?: any[];
+    results?: Person[];
   }
 
+  import { Person } from "@/types/clockwork";
+
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
-  const [currentResults, setCurrentResults] = useState<any[]>([]);
-  const [selectedPerson, setSelectedPerson] = useState<any>(null);
+  const [currentResults, setCurrentResults] = useState<Person[]>([]);
+  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
 
   const handleSearch = async (
     query: string,
