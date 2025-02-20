@@ -64,6 +64,18 @@ export function Sidebar({ searchHistory }: SidebarProps) {
                 </div>
               </div>
             )}
+            {item.candidates && item.candidates.length > 0 && (
+              <div className="text-sm text-muted-foreground space-y-2">
+                <div className="font-medium">Candidates:</div>
+                <div className="space-y-1">
+                  {item.candidates.map((candidate) => (
+                    <div key={candidate.id} className="text-sm">
+                      {candidate.name}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

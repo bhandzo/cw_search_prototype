@@ -28,20 +28,41 @@ export default function Home() {
     ]);
 
     try {
-      const response = await fetch("/api/openai-search", {
+      // Get structured query from OpenAI
+      const openaiResponse = await fetch("/api/openai-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userInput: query }),
       });
 
-      const data = await response.json();
+      const openaiData = await openaiResponse.json();
+
+      // Get candidates from Clockwork
+      const clockworkResponse = await fetch("/api/clockwork-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          query: openaiData.structuredQuery,
+          clockworkApiKey: "mock-key",
+          firmApiKey: "mock-key",
+          firmSlug: "mock-slug"
+        }),
+      });
+
+      const clockworkData = await clockworkResponse.json();
 
       setSearchHistory((prev) =>
         prev.map((item) =>
           item.timestamp === timestamp
             ? {
                 ...item,
-                structuredQuery: data.structuredQuery,
+                structuredQuery: openaiData.structuredQuery,
+                candidates: clockworkData.peopleSearch.map((person: any) => ({
+                  id: person.id,
+                  name: person.name,
+                  currentPosition: person.positions?.[0]?.title || 'Unknown',
+                  location: person.preferredAddress || 'Unknown'
+                })),
                 status: "complete",
               }
             : item
