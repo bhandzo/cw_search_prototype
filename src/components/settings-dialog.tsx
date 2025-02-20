@@ -41,18 +41,21 @@ export function SettingsDialog() {
         try {
           const decoded = atob(parsedCredentials.clockworkAuthKey);
           [clockworkApiKey, clockworkApiSecret] = decoded.split(':');
+          console.log('Decoded credentials:', { clockworkApiKey, clockworkApiSecret });
         } catch (e) {
           console.error('Error decoding clockwork auth key:', e);
         }
       }
 
-      setFormData({
+      const newFormData = {
         firmSlug: parsedCredentials.firmSlug || '',
         firmApiKey: parsedCredentials.firmApiKey || '',
-        clockworkApiKey: clockworkApiKey,
-        clockworkApiSecret: clockworkApiSecret,
+        clockworkApiKey: clockworkApiKey || '',
+        clockworkApiSecret: clockworkApiSecret || '',
         openaiApiKey: parsedCredentials.openaiApiKey || ''
-      });
+      };
+      console.log('Setting form data:', newFormData);
+      setFormData(newFormData);
     } else if (process.env.NODE_ENV === 'development') {
       const clockworkAuthKey = btoa(`${process.env.NEXT_PUBLIC_CLOCKWORK_PUBLIC_KEY}:${process.env.NEXT_PUBLIC_CLOCKWORK_SECRET_KEY}`);
       const devCredentials = {
