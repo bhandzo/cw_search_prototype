@@ -18,6 +18,9 @@ import type { SettingsFormData } from "@/types/settings";
 export function SettingsDialog() {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('sessionToken') : null
+  );
   const [formData, setFormData] = useState<SettingsFormData>({
     firmSlug: "",
     firmApiKey: "",
@@ -29,25 +32,33 @@ export function SettingsDialog() {
 
   const handleLogout = async () => {
     try {
+      const token = localStorage.getItem('sessionToken');
+      if (!token) return;
+
       const response = await fetch("/api/credentials", {
         method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (!response.ok) {
         throw new Error("Failed to logout");
       }
       
+      localStorage.removeItem('sessionToken');
+      setSessionToken(null);
+      
       // Reset form data
       setFormData({
         firmSlug: "",
         firmApiKey: "",
-        clockworkApiKey: "",
         clockworkApiSecret: "",
+        clockworkApiKey: "",
         openaiApiKey: "",
         maxCandidates: 5,
       });
       
-      // Refresh the page to reset the app state
       router.refresh();
     } catch (error) {
       console.error("Error logging out:", error);
@@ -57,8 +68,15 @@ export function SettingsDialog() {
 
   useEffect(() => {
     const loadCredentials = async () => {
+      const token = localStorage.getItem('sessionToken');
+      if (!token) return;
+
       try {
-        const response = await fetch("/api/credentials");
+        const response = await fetch("/api/credentials", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (response.ok) {
           const credentials = await response.json();
           
@@ -119,19 +137,7 @@ export function SettingsDialog() {
     };
 
     try {
-      // Validate credentials first
-      const validateResponse = await fetch("/api/clockwork-search/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credentials: credentialsToSave }),
-      });
-
-      if (!validateResponse.ok) {
-        const data = await validateResponse.json();
-        throw new Error(data.error || "Failed to validate credentials");
-      }
-
-      // Save credentials if validation successful
+      // Save credentials
       const saveResponse = await fetch("/api/credentials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -142,6 +148,9 @@ export function SettingsDialog() {
         throw new Error("Failed to save credentials");
       }
 
+      const { sessionToken } = await saveResponse.json();
+      localStorage.setItem('sessionToken', sessionToken);
+      setSessionToken(sessionToken);
       setOpen(false);
     } catch (error) {
       setError(error instanceof Error ? error.message : "An unknown error occurred");
