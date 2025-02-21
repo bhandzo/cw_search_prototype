@@ -91,34 +91,34 @@ export function SettingsDialog() {
         }
 
         const credentials = await response.json();
-          
-          let clockworkApiKey = "";
-          let clockworkApiSecret = "";
-          if (credentials.clockworkAuthKey) {
-            try {
-              const decoded = atob(credentials.clockworkAuthKey);
-              [clockworkApiKey, clockworkApiSecret] = decoded.split(":");
-            } catch (e) {
-              console.error("Error decoding clockwork auth key:", e);
-            }
+        
+        let clockworkApiKey = "";
+        let clockworkApiSecret = "";
+        if (credentials.clockworkAuthKey) {
+          try {
+            const decoded = atob(credentials.clockworkAuthKey);
+            [clockworkApiKey, clockworkApiSecret] = decoded.split(":");
+          } catch (e) {
+            console.error("Error decoding clockwork auth key:", e);
           }
-
-          setFormData({
-            firmSlug: credentials.firmSlug || "",
-            firmApiKey: credentials.firmApiKey || "",
-            clockworkApiKey: clockworkApiKey || "",
-            clockworkApiSecret: clockworkApiSecret || "",
-            openaiApiKey: credentials.openaiApiKey || "",
-            maxCandidates: credentials.maxCandidates || 5,
-          });
         }
+
+        setFormData({
+          firmSlug: credentials.firmSlug || "",
+          firmApiKey: credentials.firmApiKey || "",
+          clockworkApiKey: clockworkApiKey || "",
+          clockworkApiSecret: clockworkApiSecret || "",
+          openaiApiKey: credentials.openaiApiKey || "",
+          maxCandidates: credentials.maxCandidates || 5,
+        });
+        
       } catch (error) {
         console.error("Error loading credentials:", error);
       }
     };
 
     loadCredentials();
-  }, []);
+  }, [sessionToken]);
 
   const [error, setError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
