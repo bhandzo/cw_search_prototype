@@ -1,21 +1,37 @@
-// Temporary in-memory storage for development
-const tokenStore = new Map<string, any>();
+import { Redis } from '@upstash/redis';
+
+// Initialize Redis using environment variables
+const redis = Redis.fromEnv();
 
 export async function storeCredentials(token: string, credentials: any): Promise<void> {
   console.log("[Redis] Storing credentials for token:", token);
-  if (credentials === null) {
-    console.log("[Redis] Deleting credentials for token:", token);
-    tokenStore.delete(token);
-  } else {
-    console.log("[Redis] Setting credentials for token:", token);
-    tokenStore.set(token, credentials);
+  try {
+    if (credentials === null) {
+      console.log("[Redis] Deleting credentials for token:", token);
+      await redis.del(`credentials:${token}`);
+    } else {
+      console.log("[Redis] Setting credentials for token:", token);
+      // Store with 24 hour expiration
+      await redis.set(`credentials:${token}`, JSON.stringify(credentials), {
+        ex: 24 * 60 * 60 // 24 hours in seconds
+      });
+    }
+  } catch (error) {
+    console.error("[Redis] Error storing credentials:", error);
+    throw new Error("Failed to store credentials");
   }
-  console.log("[Redis] Current store size:", tokenStore.size);
 }
 
 export async function getCredentialsFromToken(token: string): Promise<any> {
   console.log("[Redis] Getting credentials for token:", token);
-  const credentials = tokenStore.get(token);
-  console.log("[Redis] Found credentials:", !!credentials);
-  return credentials || null;
+  try {
+    const credentials = await redis.get(`credentials:${token}`);
+    console.log("[Redis] Found credentials:", !!credentials);
+    return credentials ? 
+      (typeof credentials === 'string' ? JSON.parse(credentials) : credentials) 
+      : null;
+  } catch (error) {
+    console.error("[Redis] Error fetching credentials:", error);
+    throw new Error("Failed to fetch credentials");
+  }
 }
