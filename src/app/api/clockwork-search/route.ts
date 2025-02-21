@@ -56,13 +56,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const credentials = await getCredentialsFromToken(
-      request.headers.get("Authorization")?.split("Bearer ")[1] || ""
-    );
-    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials || {};
+    const authToken = request.headers.get("Authorization")?.split("Bearer ")[1];
+    if (!authToken) {
+      return NextResponse.json({ error: "No authorization token provided" }, { status: 401 });
+    }
+
+    const credentials = await getCredentialsFromToken(authToken);
+    if (!credentials) {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    }
+
+    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
+    if (!firmSlug || !firmApiKey || !clockworkAuthKey) {
+      return NextResponse.json({ error: "Missing required credentials" }, { status: 401 });
+    }
 
     console.log(`Making Clockwork API request for firm: ${firmSlug}`);
-    console.log("Using auth key:", clockworkAuthKey);
     console.log(`Search keywords:`, keywords);
 
     // Flatten keywords object into array while preserving multi-word keywords
@@ -90,9 +99,9 @@ export async function POST(request: Request) {
           )}&page=${page}&limit=50`,
           {
             headers: {
-              "X-API-Key": firmApiKey || "",
-              Accept: "application/json",
-              Authorization: `Bearer ${clockworkAuthKey}`,
+              "X-API-Key": firmApiKey,
+              "Accept": "application/json",
+              "Authorization": clockworkAuthKey,
             },
           }
         ).then(async (res) => {
