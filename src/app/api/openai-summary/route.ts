@@ -167,3 +167,73 @@ export async function POST(request: Request) {
     );
   }
 }
+import { NextResponse } from "next/server";
+import OpenAI from "openai";
+import { cookies } from "next/headers";
+
+async function getOpenAIKey() {
+  // Try environment variable first
+  if (process.env.OPENAI_API_KEY) {
+    return process.env.OPENAI_API_KEY;
+  }
+
+  // Fall back to credentials cookie
+  const credentialsCookie = (await cookies()).get("credentials");
+  if (!credentialsCookie) {
+    throw new Error("No credentials found");
+  }
+  
+  const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
+  if (!credentials.openaiApiKey) {
+    throw new Error("No OpenAI API key found in credentials");
+  }
+  
+  return credentials.openaiApiKey;
+}
+
+export async function POST(request: Request) {
+  try {
+    const apiKey = await getOpenAIKey();
+    const openai = new OpenAI({ apiKey });
+    
+    const body = await request.json();
+    const { person, originalQuery, keywords } = body;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4-0125-preview",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert at analyzing candidate profiles and providing relevant summaries focused on search criteria matches."
+        },
+        {
+          role: "user", 
+          content: `Analyze this candidate profile for the search "${originalQuery}" with keywords ${JSON.stringify(keywords)}:\n${JSON.stringify(person, null, 2)}`
+        }
+      ],
+      temperature: 0.7,
+    });
+
+    const summary = completion.choices[0]?.message?.content;
+    if (!summary) {
+      throw new Error("Failed to generate summary");
+    }
+
+    return NextResponse.json({
+      shortSummary: summary.split('\n\n')[0],
+      longSummary: summary.split('\n\n')[1]
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+      },
+    });
+    
+  } catch (error) {
+    console.error("OpenAI API error:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to process request" },
+      { status: 500 }
+    );
+  }
+}
