@@ -146,8 +146,11 @@ export async function POST(request: Request) {
       
       console.log(`[ClockworkSearch] Initial response for "${keyword}":`, {
         status: initialRes.status,
+        statusText: initialRes.statusText,
+        headers: Object.fromEntries(initialRes.headers.entries()),
         totalResults,
-        firstBatchSize: initialData.peopleSearch?.length || 0
+        firstBatchSize: initialData.peopleSearch?.length || 0,
+        meta: initialData.meta
       });
 
       // If there are more results, fetch them with the offset
@@ -169,6 +172,13 @@ export async function POST(request: Request) {
         }
 
         const remainingData = await remainingRes.json();
+        console.log(`[ClockworkSearch] Remaining results response for "${keyword}":`, {
+          status: remainingRes.status,
+          statusText: remainingRes.statusText,
+          headers: Object.fromEntries(remainingRes.headers.entries()),
+          resultCount: remainingData.peopleSearch?.length || 0,
+          meta: remainingData.meta
+        });
         
         // Combine the results
         return {

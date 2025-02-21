@@ -30,6 +30,13 @@ export async function POST(
     }
 
     const data = await response.json();
+    console.log("[ClockworkNotes] Response for person:", personId, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      noteCount: data.notes?.length || 0
+    });
+    
     return NextResponse.json(data, {
       headers: {
         'Content-Type': 'application/json',
