@@ -158,7 +158,13 @@ export function SettingsDialog({
     };
 
     try {
-      console.log("[SettingsDialog] Validating credentials...");
+      console.log("[SettingsDialog] Starting validation...");
+      console.log("[SettingsDialog] Session token:", sessionToken);
+      console.log("[SettingsDialog] Credentials to validate:", {
+        ...credentialsToSave,
+        clockworkAuthKey: '[REDACTED]'
+      });
+      
       const validationResponse = await fetch("/api/clockwork-search/validate", {
         method: "POST",
         headers: { 
@@ -167,6 +173,8 @@ export function SettingsDialog({
         },
         body: JSON.stringify(credentialsToSave),
       });
+      
+      console.log("[SettingsDialog] Validation response status:", validationResponse.status);
 
       console.log("[SettingsDialog] Validation response:", validationResponse.status);
 

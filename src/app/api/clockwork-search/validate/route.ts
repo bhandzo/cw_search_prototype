@@ -3,12 +3,17 @@ import { NextResponse } from "next/server";
 // import { getCredentialsFromToken } from "@/lib/redis";
 
 export async function POST(request: Request) {
+  console.log("[Validate] Request received");
+  
   try {
     const authHeader = request.headers.get('Authorization');
-    const credentials = await request.json();
+    console.log("[Validate] Auth header present:", !!authHeader);
     
-    console.log("[Validate] Auth header:", authHeader);
-    console.log("[Validate] Received credentials:", credentials);
+    const credentials = await request.json();
+    console.log("[Validate] Received credentials:", {
+      ...credentials,
+      clockworkAuthKey: credentials.clockworkAuthKey ? '[REDACTED]' : undefined
+    });
 
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials || {};
 
@@ -20,20 +25,24 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log(`Validating credentials for firm: ${firmSlug}`);
-    console.log("Using auth key:", clockworkAuthKey);
-
+    console.log("[Validate] Starting validation for firm:", firmSlug);
+    
     const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?limit=1`;
+    console.log("[Validate] Request URL:", url);
     const headers = new Headers();
     headers.append("X-API-Key", firmApiKey);
     headers.append("Accept", "application/json");
     headers.append("Authorization", `Bearer ${clockworkAuthKey}`);
 
-    console.log("Making request to:", url);
-    console.log("With headers:", headers);
-    console.log(JSON.stringify(headers, null, 2));
+    console.log("[Validate] Request headers:", {
+      "X-API-Key": "[REDACTED]",
+      "Accept": headers.get("Accept"),
+      "Authorization": "[REDACTED]"
+    });
 
+    console.log("[Validate] Making request...");
     const response = await fetch(url, { headers });
+    console.log("[Validate] Response received");
 
     console.log("Response status:", response.status);
     console.log("Response headers:", response.headers);
