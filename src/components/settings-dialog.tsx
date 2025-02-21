@@ -140,20 +140,14 @@ export function SettingsDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[SettingsDialog] Starting submit");
     setError(null);
     setIsValidating(true);
 
-    // Create base64 encoded auth key from API key and secret
-    console.log("API Key:", formData.clockworkApiKey);
-    console.log("API Secret:", formData.clockworkApiSecret);
     const clockworkAuthKey = btoa(
       `${formData.clockworkApiKey}:${formData.clockworkApiSecret}`
     );
-    console.log(
-      "Combined string:",
-      `${formData.clockworkApiKey}:${formData.clockworkApiSecret}`
-    );
-    console.log("Base64 encoded auth key:", clockworkAuthKey);
+    console.log("[SettingsDialog] Generated auth key");
 
     const credentialsToSave = {
       firmSlug: formData.firmSlug,
@@ -164,19 +158,21 @@ export function SettingsDialog({
     };
 
     try {
-      // Validate credentials first
+      console.log("[SettingsDialog] Validating credentials...");
       const validationResponse = await fetch("/api/clockwork-search/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentialsToSave),
       });
 
+      console.log("[SettingsDialog] Validation response:", validationResponse.status);
+
       if (!validationResponse.ok) {
         const errorData = await validationResponse.json();
         throw new Error(errorData.error || "Invalid credentials");
       }
 
-      // If validation succeeds, save credentials
+      console.log("[SettingsDialog] Saving credentials...");
       const saveResponse = await fetch("/api/credentials", {
         method: "POST",
         headers: { 
@@ -186,18 +182,20 @@ export function SettingsDialog({
         body: JSON.stringify(credentialsToSave),
       });
 
+      console.log("[SettingsDialog] Save response:", saveResponse.status);
+
       if (!saveResponse.ok) {
         throw new Error("Failed to save credentials");
       }
 
       const responseData = await saveResponse.json();
-      console.log("Save response data:", responseData);
+      console.log("[SettingsDialog] Save response data:", responseData);
       
       if (!responseData.token) {
         throw new Error("No session token received");
       }
       
-      console.log("Received new session token:", responseData.token);
+      console.log("[SettingsDialog] Setting new session token:", responseData.token);
       localStorage.setItem('sessionToken', responseData.token);
       setSessionToken(responseData.token);
       

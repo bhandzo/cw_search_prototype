@@ -16,7 +16,7 @@ export default function Home() {
 
   useEffect(() => {
     const token = localStorage.getItem('sessionToken');
-    console.log("Initial session token from localStorage:", token);
+    console.log("[Page] Initial session token check:", token);
     setSessionToken(token);
   }, []);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
@@ -27,6 +27,7 @@ export default function Home() {
   useEffect(() => {
     const checkCredentials = async () => {
       const token = localStorage.getItem('sessionToken');
+      console.log("[Page] Checking credentials with token:", token);
       if (!token) return;
 
       try {
@@ -36,12 +37,15 @@ export default function Home() {
           }
         });
         
+        console.log("[Page] Credentials check response:", response.status);
+        
         if (!response.ok) {
+          console.log("[Page] Removing invalid session token");
           localStorage.removeItem('sessionToken');
           setSessionToken(null);
         }
       } catch (error) {
-        console.error("Error checking credentials:", error);
+        console.error("[Page] Error checking credentials:", error);
         localStorage.removeItem('sessionToken');
         setSessionToken(null);
       }
