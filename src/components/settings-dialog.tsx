@@ -77,16 +77,19 @@ export function SettingsDialog({
 
   useEffect(() => {
     const loadCredentials = async () => {
-      if (!sessionToken) {
+      const token = localStorage.getItem('sessionToken');
+      setSessionToken(token);
+      
+      if (!token) {
         setOpen(true); // Open dialog if no session token exists
         return;
       }
 
       try {
-        console.log("Loading credentials with session token:", sessionToken);
+        console.log("Loading credentials with session token:", token);
         const response = await fetch("/api/credentials", {
           headers: {
-            'Authorization': `Bearer ${sessionToken}`
+            'Authorization': `Bearer ${token}`
           }
         });
         
@@ -125,11 +128,12 @@ export function SettingsDialog({
         
       } catch (error) {
         console.error("Error loading credentials:", error);
+        setOpen(true);
       }
     };
 
     loadCredentials();
-  }, [sessionToken]);
+  }, []); // Remove sessionToken from dependencies
 
   const [error, setError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
