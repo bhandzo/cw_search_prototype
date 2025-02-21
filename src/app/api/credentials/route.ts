@@ -2,6 +2,21 @@ import { NextResponse } from "next/server";
 import { getCredentialsFromToken, storeCredentials } from "@/lib/redis";
 import { generateToken } from "@/lib/tokens";
 
+export async function POST(request: Request) {
+  try {
+    const credentials = await request.json();
+    const token = generateToken();
+    
+    await storeCredentials(token, credentials);
+    console.log("Stored credentials with token:", token);
+    
+    return NextResponse.json({ token });
+  } catch (error) {
+    console.error("Error storing credentials:", error);
+    return NextResponse.json({ error: "Failed to store credentials" }, { status: 500 });
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const token = request.headers.get('Authorization')?.split('Bearer ')[1];
@@ -10,6 +25,8 @@ export async function GET(request: Request) {
     }
 
     const credentials = await getCredentialsFromToken(token);
+    console.log("Retrieved credentials for token:", token, credentials);
+    
     if (!credentials) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
@@ -18,25 +35,6 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Error fetching credentials:", error);
     return NextResponse.json({ error: "Failed to fetch credentials" }, { status: 500 });
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const credentials = await request.json();
-    
-    // Check if there's an existing token
-    const existingToken = request.headers.get('Authorization')?.split('Bearer ')[1];
-    
-    // Generate new token if none exists
-    const token = existingToken || await generateToken();
-    
-    await storeCredentials(token, credentials);
-    
-    return NextResponse.json({ token });
-  } catch (error) {
-    console.error("Error storing credentials:", error);
-    return NextResponse.json({ error: "Failed to store credentials" }, { status: 500 });
   }
 }
 
