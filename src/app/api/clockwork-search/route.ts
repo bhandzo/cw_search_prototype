@@ -114,45 +114,57 @@ export async function POST(request: Request) {
     >();
 
     // Make initial requests for each keyword to get total counts
-    const searchPromises = await Promise.all(keywordsList.map(async (keyword: string) => {
-      const headers = {
-        "X-API-Key": firmApiKey,
-        "Accept": "application/json",
-        "Authorization": `Bearer ${clockworkAuthKey}`,
-      };
+    const searchPromises = await Promise.all(
+      keywordsList.map(async (keyword: string) => {
+        const headers = {
+          "X-API-Key": firmApiKey,
+          Accept: "application/json",
+          Authorization: `Bearer ${clockworkAuthKey}`,
+        };
 
-      // Initial request without pagination
-      const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?q=${encodeURIComponent(keyword)}`;
-      
-      console.log(`[ClockworkSearch] Making initial request for "${keyword}":`, {
-        url,
-        headers: {
-          "X-API-Key": "[REDACTED]",
-          "Accept": "application/json",
-          "Authorization": "[REDACTED]",
-        },
-      });
+        // Initial request without pagination
+        const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(
+          keyword
+        )}`;
 
-      const initialRes = await fetch(url, { headers });
-      
-      if (!initialRes.ok) {
-        const errorText = await initialRes.text();
-        console.error(`[ClockworkSearch] Error response for "${keyword}":`, errorText);
-        throw new Error(`Clockwork API error: ${initialRes.status} - ${errorText}`);
-      }
+        console.log(
+          `[ClockworkSearch] Making initial request for "${keyword}":`,
+          {
+            url,
+            headers: {
+              "X-API-Key": "[REDACTED]",
+              Accept: "application/json",
+              Authorization: "[REDACTED]",
+            },
+          }
+        );
 
-      const data = await initialRes.json();
-      console.log(`[ClockworkSearch] Response for "${keyword}":`, {
-        status: initialRes.status,
-        statusText: initialRes.statusText,
-        headers: Object.fromEntries(initialRes.headers.entries()),
-        totalResults: data.meta?.total || 0,
-        resultCount: data.peopleSearch?.length || 0,
-        meta: data.meta
-      });
+        const initialRes = await fetch(url, { headers });
 
-      return { keyword, data };
-    }));
+        if (!initialRes.ok) {
+          const errorText = await initialRes.text();
+          console.error(
+            `[ClockworkSearch] Error response for "${keyword}":`,
+            errorText
+          );
+          throw new Error(
+            `Clockwork API error: ${initialRes.status} - ${errorText}`
+          );
+        }
+
+        const data = await initialRes.json();
+        console.log(`[ClockworkSearch] Response for "${keyword}":`, {
+          status: initialRes.status,
+          statusText: initialRes.statusText,
+          headers: Object.fromEntries(initialRes.headers.entries()),
+          totalResults: data.meta?.total || 0,
+          resultCount: data.peopleSearch?.length || 0,
+          meta: data.meta,
+        });
+
+        return { keyword, data };
+      })
+    );
 
     // Wait for all requests to complete
     const results = await Promise.all(searchPromises);
