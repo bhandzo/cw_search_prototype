@@ -18,6 +18,7 @@ import type { SettingsFormData } from "@/types/settings";
 export function SettingsDialog() {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(
     typeof window !== 'undefined' ? localStorage.getItem('sessionToken') : null
   );
@@ -172,7 +173,10 @@ export function SettingsDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen || open} onOpenChange={(value) => {
+      setIsOpen(value);
+      setOpen(value);
+    }}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon">
           <Settings className="h-5 w-5" />

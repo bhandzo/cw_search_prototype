@@ -8,6 +8,7 @@ import { SearchBar } from "@/components/search-bar";
 import { Sidebar } from "@/components/sidebar";
 import { CandidateCard } from "@/components/candidate-card";
 import { ProfileDrawer } from "@/components/profile-drawer";
+import { SettingsDialog } from "@/components/settings-dialog";
 
 export default function Home() {
 
@@ -220,6 +221,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen">
+      <SettingsDialog />
       {searchHistory.length > 0 ? (
         <>
           <Sidebar searchHistory={searchHistory} onSearch={handleSearch} />
