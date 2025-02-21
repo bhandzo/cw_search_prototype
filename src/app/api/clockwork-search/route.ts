@@ -113,60 +113,75 @@ export async function POST(request: Request) {
       }
     >();
 
-    // Make requests for each keyword, getting first two pages
-    const searchPromises = keywordsList.flatMap((keyword: string) => {
-      const offsets = [0, 50];
-      return offsets.map(async (offset) => {
-        const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?q=${encodeURIComponent(
-          keyword
-        )}&offset=${offset}&limit=50`;
+    // Make initial requests for each keyword to get total counts
+    const searchPromises = await Promise.all(keywordsList.map(async (keyword: string) => {
+      const headers = {
+        "X-API-Key": firmApiKey,
+        "Accept": "application/json",
+        "Authorization": `Bearer ${clockworkAuthKey}`,
+      };
 
-        const headers = {
-          "X-API-Key": firmApiKey,
-          Accept: "application/json",
-          Authorization: `Bearer ${clockworkAuthKey}`,
-        };
+      // Initial request without pagination
+      const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?q=${encodeURIComponent(keyword)}`;
+      
+      console.log(`[ClockworkSearch] Making initial request for "${keyword}":`, {
+        url,
+        headers: {
+          "X-API-Key": "[REDACTED]",
+          "Accept": "application/json",
+          "Authorization": "[REDACTED]",
+        },
+      });
 
-        console.log(
-          `[ClockworkSearch] Making request for "${keyword}" offset ${offset}:`,
-          {
-            url,
-            headers: {
-              "X-API-Key": "[REDACTED]",
-              Accept: "application/json",
-              Authorization: "[REDACTED]",
-            },
-          }
-        );
+      const initialRes = await fetch(url, { headers });
+      
+      if (!initialRes.ok) {
+        const errorText = await initialRes.text();
+        console.error(`[ClockworkSearch] Error response for "${keyword}":`, errorText);
+        throw new Error(`Clockwork API error: ${initialRes.status} - ${errorText}`);
+      }
 
-        const res = await fetch(url, { headers });
+      const initialData = await initialRes.json();
+      const totalResults = initialData.meta?.total || 0;
+      
+      console.log(`[ClockworkSearch] Initial response for "${keyword}":`, {
+        status: initialRes.status,
+        totalResults,
+        firstBatchSize: initialData.peopleSearch?.length || 0
+      });
 
-        console.log(
-          `[ClockworkSearch] Response for "${keyword}" page ${page}:`,
-          {
-            status: res.status,
-            statusText: res.statusText,
-            headers: Object.fromEntries(res.headers.entries()),
-          }
-        );
-
-        if (!res.ok) {
-          const errorText = await res.text();
-          console.error(
-            `[ClockworkSearch] Error response for "${keyword}":`,
-            errorText
-          );
-          throw new Error(`Clockwork API error: ${res.status} - ${errorText}`);
-        }
-
-        const data = await res.json();
-        console.log(`[ClockworkSearch] Success for "${keyword}":`, {
-          totalResults: data.peopleSearch?.length || 0,
+      // If there are more results, fetch them with the offset
+      if (totalResults > initialData.peopleSearch?.length) {
+        const offset = initialData.peopleSearch.length;
+        const remainingUrl = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?q=${encodeURIComponent(keyword)}&offset=${offset}`;
+        
+        console.log(`[ClockworkSearch] Fetching remaining results for "${keyword}":`, {
+          url: remainingUrl,
+          offset
         });
 
-        return { keyword, data };
-      });
-    });
+        const remainingRes = await fetch(remainingUrl, { headers });
+        
+        if (!remainingRes.ok) {
+          const errorText = await remainingRes.text();
+          console.error(`[ClockworkSearch] Error fetching remaining results for "${keyword}":`, errorText);
+          throw new Error(`Clockwork API error: ${remainingRes.status} - ${errorText}`);
+        }
+
+        const remainingData = await remainingRes.json();
+        
+        // Combine the results
+        return {
+          keyword,
+          data: {
+            ...initialData,
+            peopleSearch: [...initialData.peopleSearch, ...remainingData.peopleSearch]
+          }
+        };
+      }
+
+      return { keyword, data: initialData };
+    }));
 
     // Wait for all requests to complete
     const results = await Promise.all(searchPromises);
