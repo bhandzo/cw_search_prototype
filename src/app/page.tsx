@@ -18,6 +18,7 @@ export default function Home() {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [currentResults, setCurrentResults] = useState<Person[]>([]);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     const checkCredentials = async () => {
@@ -50,9 +51,9 @@ export default function Home() {
     existingKeywords?: Record<string, string[]>
   ) => {
     try {
-      console.log("Search initiated with session token:", sessionToken);
       if (!sessionToken) {
-        throw new Error("Please configure your credentials");
+        setShowSettings(true);
+        return;
       }
 
       const credentialsResponse = await fetch("/api/credentials", {
@@ -264,6 +265,10 @@ export default function Home() {
         person={selectedPerson}
         open={!!selectedPerson}
         onClose={() => setSelectedPerson(null)}
+      />
+      <SettingsDialog 
+        open={showSettings}
+        onOpenChange={setShowSettings}
       />
     </div>
   );

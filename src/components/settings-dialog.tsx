@@ -15,7 +15,15 @@ import { Label } from "@/components/ui/label";
 import { Settings } from "lucide-react";
 import type { SettingsFormData } from "@/types/settings";
 
-export function SettingsDialog() {
+interface SettingsDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function SettingsDialog({
+  open: controlledOpen,
+  onOpenChange: setControlledOpen
+}: SettingsDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -175,10 +183,14 @@ export function SettingsDialog() {
   };
 
   return (
-    <Dialog open={isOpen || open} onOpenChange={(value) => {
-      setIsOpen(value);
-      setOpen(value);
-    }}>
+    <Dialog 
+      open={controlledOpen ?? (isOpen || open)} 
+      onOpenChange={(value) => {
+        setIsOpen(value);
+        setOpen(value);
+        setControlledOpen?.(value);
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon">
           <Settings className="h-5 w-5" />
