@@ -68,17 +68,29 @@ export function SettingsDialog() {
 
   useEffect(() => {
     const loadCredentials = async () => {
-      const token = localStorage.getItem('sessionToken');
-      if (!token) return;
+      if (!sessionToken) {
+        setOpen(true); // Open dialog if no session token exists
+        return;
+      }
 
       try {
         const response = await fetch("/api/credentials", {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${sessionToken}`
           }
         });
-        if (response.ok) {
-          const credentials = await response.json();
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            localStorage.removeItem('sessionToken');
+            setSessionToken(null);
+            setOpen(true);
+            return;
+          }
+          throw new Error("Failed to load credentials");
+        }
+
+        const credentials = await response.json();
           
           let clockworkApiKey = "";
           let clockworkApiSecret = "";
@@ -168,11 +180,8 @@ export function SettingsDialog() {
       </DialogTrigger>
       <DialogContent
         onInteractOutside={(e) => {
-          // Prevent closing if credentials don't exist
-          if (
-            !localStorage.getItem("credentials") &&
-            process.env.NODE_ENV !== "development"
-          ) {
+          // Prevent closing if no session token exists
+          if (!sessionToken && process.env.NODE_ENV !== "development") {
             e.preventDefault();
           }
         }}

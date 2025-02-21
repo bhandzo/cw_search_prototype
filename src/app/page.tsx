@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Person, Note } from "@/types/clockwork";
 import { SearchHistoryItem } from "@/types/search";
 import { LoadingStatus } from "@/components/loading-status";
@@ -11,17 +11,59 @@ import { ProfileDrawer } from "@/components/profile-drawer";
 
 export default function Home() {
 
+  const [sessionToken, setSessionToken] = useState<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('sessionToken') : null
+  );
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [currentResults, setCurrentResults] = useState<Person[]>([]);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+
+  useEffect(() => {
+    const checkCredentials = async () => {
+      const token = localStorage.getItem('sessionToken');
+      if (!token) return;
+
+      try {
+        const response = await fetch("/api/credentials", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          localStorage.removeItem('sessionToken');
+          setSessionToken(null);
+        }
+      } catch (error) {
+        console.error("Error checking credentials:", error);
+        localStorage.removeItem('sessionToken');
+        setSessionToken(null);
+      }
+    };
+
+    checkCredentials();
+  }, []);
 
   const handleSearch = async (
     query: string,
     existingKeywords?: Record<string, string[]>
   ) => {
     try {
-      const credentialsResponse = await fetch("/api/credentials");
+      if (!sessionToken) {
+        throw new Error("Please configure your credentials");
+      }
+
+      const credentialsResponse = await fetch("/api/credentials", {
+        headers: {
+          'Authorization': `Bearer ${sessionToken}`
+        }
+      });
+
       if (!credentialsResponse.ok) {
+        if (credentialsResponse.status === 401) {
+          localStorage.removeItem('sessionToken');
+          setSessionToken(null);
+        }
         throw new Error("Please configure your credentials");
       }
 

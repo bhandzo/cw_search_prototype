@@ -9,18 +9,19 @@ export async function POST(
     // Read the JSON payload; expecting personId to be passed in the request body.
     const { personId } = await request.json();
 
-    // Get credentials from cookie
-    const credentialsCookie = (await cookies()).get("credentials");
-    if (!credentialsCookie) {
-      throw new Error("No credentials found");
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: "No session token provided" }, { status: 401 });
     }
-    
-    const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
-    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
 
-    if (!firmSlug || !firmApiKey || !clockworkAuthKey) {
-      throw new Error("Invalid credentials");
+    const sessionToken = authHeader.split('Bearer ')[1];
+    const credentials = await tokenService.getCredentials(sessionToken);
+    
+    if (!credentials) {
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
+
+    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
 
     // Call the external API using the retrieved credentials.
     const response = await fetch(
