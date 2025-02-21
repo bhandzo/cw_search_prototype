@@ -86,14 +86,14 @@ export function SettingsDialog({
       }
 
       try {
-        console.log("Loading credentials with session token:", token);
+        console.log("[SettingsDialog] Loading credentials with session token:", token);
         const response = await fetch("/api/credentials", {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
         
-        console.log("Credentials load response status:", response.status);
+        console.log("[SettingsDialog] Credentials load response status:", response.status);
         if (!response.ok) {
           if (response.status === 401) {
             localStorage.removeItem('sessionToken');
@@ -105,7 +105,12 @@ export function SettingsDialog({
         }
 
         const credentials = await response.json();
+        console.log("[SettingsDialog] Loaded credentials:", {
+          ...credentials,
+          clockworkAuthKey: credentials.clockworkAuthKey ? '[REDACTED]' : undefined
+        });
         
+        // Split the clockworkAuthKey into API key and secret
         let clockworkApiKey = "";
         let clockworkApiSecret = "";
         if (credentials.clockworkAuthKey) {
@@ -113,21 +118,21 @@ export function SettingsDialog({
             const decoded = atob(credentials.clockworkAuthKey);
             [clockworkApiKey, clockworkApiSecret] = decoded.split(":");
           } catch (e) {
-            console.error("Error decoding clockwork auth key:", e);
+            console.error("[SettingsDialog] Error decoding clockwork auth key:", e);
           }
         }
 
         setFormData({
           firmSlug: credentials.firmSlug || "",
           firmApiKey: credentials.firmApiKey || "",
-          clockworkApiKey: clockworkApiKey || "",
-          clockworkApiSecret: clockworkApiSecret || "",
+          clockworkApiKey,
+          clockworkApiSecret,
           openaiApiKey: credentials.openaiApiKey || "",
           maxCandidates: credentials.maxCandidates || 5,
         });
         
       } catch (error) {
-        console.error("Error loading credentials:", error);
+        console.error("[SettingsDialog] Error loading credentials:", error);
         setOpen(true);
       }
     };
