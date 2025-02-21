@@ -141,56 +141,17 @@ export async function POST(request: Request) {
         throw new Error(`Clockwork API error: ${initialRes.status} - ${errorText}`);
       }
 
-      const initialData = await initialRes.json();
-      const totalResults = initialData.meta?.total || 0;
-      
-      console.log(`[ClockworkSearch] Initial response for "${keyword}":`, {
+      const data = await initialRes.json();
+      console.log(`[ClockworkSearch] Response for "${keyword}":`, {
         status: initialRes.status,
         statusText: initialRes.statusText,
         headers: Object.fromEntries(initialRes.headers.entries()),
-        totalResults,
-        firstBatchSize: initialData.peopleSearch?.length || 0,
-        meta: initialData.meta
+        totalResults: data.meta?.total || 0,
+        resultCount: data.peopleSearch?.length || 0,
+        meta: data.meta
       });
 
-      // If there are more results, fetch them with the offset
-      if (totalResults > initialData.peopleSearch?.length) {
-        const offset = initialData.peopleSearch.length;
-        const remainingUrl = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?q=${encodeURIComponent(keyword)}&offset=${offset}`;
-        
-        console.log(`[ClockworkSearch] Fetching remaining results for "${keyword}":`, {
-          url: remainingUrl,
-          offset
-        });
-
-        const remainingRes = await fetch(remainingUrl, { headers });
-        
-        if (!remainingRes.ok) {
-          const errorText = await remainingRes.text();
-          console.error(`[ClockworkSearch] Error fetching remaining results for "${keyword}":`, errorText);
-          throw new Error(`Clockwork API error: ${remainingRes.status} - ${errorText}`);
-        }
-
-        const remainingData = await remainingRes.json();
-        console.log(`[ClockworkSearch] Remaining results response for "${keyword}":`, {
-          status: remainingRes.status,
-          statusText: remainingRes.statusText,
-          headers: Object.fromEntries(remainingRes.headers.entries()),
-          resultCount: remainingData.peopleSearch?.length || 0,
-          meta: remainingData.meta
-        });
-        
-        // Combine the results
-        return {
-          keyword,
-          data: {
-            ...initialData,
-            peopleSearch: [...initialData.peopleSearch, ...remainingData.peopleSearch]
-          }
-        };
-      }
-
-      return { keyword, data: initialData };
+      return { keyword, data };
     }));
 
     // Wait for all requests to complete
