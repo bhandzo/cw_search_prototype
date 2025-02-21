@@ -12,9 +12,13 @@ import { SettingsDialog } from "@/components/settings-dialog";
 
 export default function Home() {
 
-  const [sessionToken, setSessionToken] = useState<string | null>(
-    typeof window !== 'undefined' ? localStorage.getItem('sessionToken') : null
-  );
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('sessionToken');
+    console.log("Initial session token from localStorage:", token);
+    setSessionToken(token);
+  }, []);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [currentResults, setCurrentResults] = useState<Person[]>([]);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);

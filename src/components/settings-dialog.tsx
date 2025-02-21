@@ -186,14 +186,16 @@ export function SettingsDialog({
         throw new Error("Failed to save credentials");
       }
 
-      const { token } = await saveResponse.json();
-      if (!token) {
+      const responseData = await saveResponse.json();
+      console.log("Save response data:", responseData);
+      
+      if (!responseData.token) {
         throw new Error("No session token received");
       }
       
-      console.log("Received new session token:", token);
-      localStorage.setItem('sessionToken', token);
-      setSessionToken(token);
+      console.log("Received new session token:", responseData.token);
+      localStorage.setItem('sessionToken', responseData.token);
+      setSessionToken(responseData.token);
       
       // Only close dialog if both validation and save succeed
       setOpen(false);
