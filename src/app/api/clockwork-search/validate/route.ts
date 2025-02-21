@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     console.log(`Validating credentials for firm: ${firmSlug}`);
     console.log("Using auth key:", clockworkAuthKey);
 
-    const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?limit=1`;
+    const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?limit=1`;
     const headers = new Headers();
     headers.append("X-API-Key", firmApiKey);
     headers.append("Accept", "application/json");

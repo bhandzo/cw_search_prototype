@@ -160,7 +160,19 @@ export function SettingsDialog({
     };
 
     try {
-      // Save credentials
+      // Validate credentials first
+      const validationResponse = await fetch("/api/clockwork-search/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentialsToSave),
+      });
+
+      if (!validationResponse.ok) {
+        const errorData = await validationResponse.json();
+        throw new Error(errorData.error || "Invalid credentials");
+      }
+
+      // If validation succeeds, save credentials
       const saveResponse = await fetch("/api/credentials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -174,7 +186,11 @@ export function SettingsDialog({
       const { sessionToken } = await saveResponse.json();
       localStorage.setItem('sessionToken', sessionToken);
       setSessionToken(sessionToken);
+      
+      // Only close dialog if both validation and save succeed
       setOpen(false);
+      setIsOpen(false);
+      setControlledOpen?.(false);
     } catch (error) {
       setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
