@@ -66,13 +66,14 @@ export default function Home() {
         return;
       }
 
+      console.log("[Page] Starting search with session token:", sessionToken);
       const credentialsResponse = await fetch("/api/credentials", {
         headers: {
           'Authorization': `Bearer ${sessionToken}`
         }
       });
 
-      console.log("Credentials verification response:", credentialsResponse.status);
+      console.log("[Page] Credentials verification response:", credentialsResponse.status);
       
       if (!credentialsResponse.ok) {
         if (credentialsResponse.status === 401) {

@@ -51,13 +51,23 @@ export async function POST(request: Request) {
     const { keywords } = body;
 
 
-    const authToken = request.headers.get("Authorization")?.split("Bearer ")[1];
+    const authHeader = request.headers.get("Authorization");
+    console.log("[ClockworkSearch] Auth header:", authHeader);
+    
+    const authToken = authHeader?.split("Bearer ")[1];
+    console.log("[ClockworkSearch] Extracted token:", authToken);
+    
     if (!authToken) {
+      console.log("[ClockworkSearch] No authorization token provided");
       return NextResponse.json({ error: "No authorization token provided" }, { status: 401 });
     }
 
+    console.log("[ClockworkSearch] Fetching credentials for token");
     const credentials = await getCredentialsFromToken(authToken);
+    console.log("[ClockworkSearch] Retrieved credentials:", credentials ? "exists" : "null");
+    
     if (!credentials) {
+      console.log("[ClockworkSearch] Invalid or expired token");
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
 
