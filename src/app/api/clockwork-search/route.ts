@@ -50,36 +50,53 @@ export async function POST(request: Request) {
     const body = (await request.json()) as SearchRequestBody;
     const { keywords } = body;
 
-
     const authHeader = request.headers.get("Authorization");
     console.log("[ClockworkSearch] Auth header:", authHeader);
-    
+
     const authToken = authHeader?.split("Bearer ")[1];
     console.log("[ClockworkSearch] Extracted token:", authToken);
-    
+
     if (!authToken) {
       console.log("[ClockworkSearch] No authorization token provided");
-      return NextResponse.json({ error: "No authorization token provided" }, { status: 401 });
+      return NextResponse.json(
+        { error: "No authorization token provided" },
+        { status: 401 }
+      );
     }
 
     console.log("[ClockworkSearch] Fetching credentials for token");
     const credentials = await getCredentialsFromToken(authToken);
-    console.log("[ClockworkSearch] Retrieved credentials:", credentials ? "exists" : "null");
-    
+    console.log(
+      "[ClockworkSearch] Retrieved credentials:",
+      credentials ? "exists" : "null"
+    );
+
     if (!credentials) {
       console.log("[ClockworkSearch] Invalid or expired token");
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 401 }
+      );
     }
 
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
     if (!firmSlug || !firmApiKey || !clockworkAuthKey) {
-      return NextResponse.json({ error: "Missing required credentials" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Missing required credentials" },
+        { status: 401 }
+      );
     }
 
     console.log(`[ClockworkSearch] Making API request for firm: ${firmSlug}`);
     console.log(`[ClockworkSearch] Search keywords:`, keywords);
-    console.log(`[ClockworkSearch] Using auth key:`, clockworkAuthKey ? '[REDACTED]' : 'missing');
-    console.log(`[ClockworkSearch] Using firm API key:`, firmApiKey ? '[REDACTED]' : 'missing');
+    console.log(
+      `[ClockworkSearch] Using auth key:`,
+      clockworkAuthKey ? "[REDACTED]" : "missing"
+    );
+    console.log(
+      `[ClockworkSearch] Using firm API key:`,
+      firmApiKey ? "[REDACTED]" : "missing"
+    );
 
     // Flatten keywords object into array while preserving multi-word keywords
     const keywordsList = Object.values(keywords)
@@ -98,7 +115,7 @@ export async function POST(request: Request) {
 
     // Make requests for each keyword, getting first two pages
     const searchPromises = keywordsList.flatMap((keyword: string) => {
-      const pages = [1, 2];
+      const pages = [0, 1];
       return pages.map((page) =>
         fetch(
           `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?q=${encodeURIComponent(
@@ -107,8 +124,8 @@ export async function POST(request: Request) {
           {
             headers: {
               "X-API-Key": firmApiKey,
-              "Accept": "application/json",
-              "Authorization": `Bearer ${clockworkAuthKey}`,
+              Accept: "application/json",
+              Authorization: `Bearer ${clockworkAuthKey}`,
             },
           }
         ).then(async (res) => {
