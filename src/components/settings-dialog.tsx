@@ -215,18 +215,12 @@ export function SettingsDialog({
 
   return (
     <Dialog 
-      open={controlledOpen ?? (isOpen || open)} 
+      open={controlledOpen ?? open}
       onOpenChange={(value) => {
-        setIsOpen(value);
         setOpen(value);
         setControlledOpen?.(value);
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Settings className="h-5 w-5" />
-        </Button>
-      </DialogTrigger>
       <DialogContent
         onInteractOutside={(e) => {
           // Prevent closing if no session token exists
