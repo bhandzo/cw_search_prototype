@@ -224,7 +224,6 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen">
-      <SettingsDialog />
       {searchHistory.length > 0 ? (
         <>
           <Sidebar searchHistory={searchHistory} onSearch={handleSearch} />
