@@ -175,7 +175,10 @@ export function SettingsDialog({
       // If validation succeeds, save credentials
       const saveResponse = await fetch("/api/credentials", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": sessionToken ? `Bearer ${sessionToken}` : ''
+        },
         body: JSON.stringify(credentialsToSave),
       });
 

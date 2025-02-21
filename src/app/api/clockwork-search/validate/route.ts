@@ -3,8 +3,12 @@ import { getCredentialsFromToken } from "@/lib/redis";
 
 export async function POST(request: Request) {
   try {
-    // Get credentials from session token
-    const sessionToken = request.headers.get('Authorization')?.split('Bearer ')[1];
+    const authHeader = request.headers.get('Authorization');
+    console.log("Auth header:", authHeader);
+    
+    const sessionToken = authHeader?.split('Bearer ')[1];
+    console.log("Extracted session token:", sessionToken);
+    
     if (!sessionToken) {
       console.error("No session token provided");
       return NextResponse.json({ error: "No session token provided" }, { status: 401 });
