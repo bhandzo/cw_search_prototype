@@ -177,13 +177,15 @@ export default function Home() {
                         : person
                     )
                   );
-                  setSearchHistory((prev) =>
-                    prev.map((item) =>
-                      item.timestamp === timestamp
-                        ? { ...item, status: "summarizing" }
-                        : item
-                    )
-                  );
+                  if (update.status === "summarizing") {
+                    setSearchHistory((prev) =>
+                      prev.map((item) =>
+                        item.timestamp === timestamp
+                          ? { ...item, status: "summarizing" }
+                          : item
+                      )
+                    );
+                  }
                   break;
 
                 case "summary":

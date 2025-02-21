@@ -247,13 +247,14 @@ export async function POST(request: Request) {
               const notesData = await notesResponse.json();
               result.notes = notesData.notes || [];
 
-              // Send notes update
+              // Send notes update and status change
               controller.enqueue(
                 new TextEncoder().encode(
                   JSON.stringify({
                     type: "notes",
                     personId: result.id,
                     notes: result.notes,
+                    status: "summarizing"
                   }) + "\n"
                 )
               );
