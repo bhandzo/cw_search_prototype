@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
+import { getCredentialsFromToken } from "@/lib/redis";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { credentials } = body;
+    // Get credentials from session token
+    const sessionToken = request.headers.get('Authorization')?.split('Bearer ')[1];
+    if (!sessionToken) {
+      console.error("No session token provided");
+      return NextResponse.json({ error: "No session token provided" }, { status: 401 });
+    }
 
+    const credentials = await getCredentialsFromToken(sessionToken);
     if (!credentials) {
-      console.error("No credentials provided for validation");
-      throw new Error("No credentials provided");
+      console.error("Invalid or expired session token");
+      return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
     }
 
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
