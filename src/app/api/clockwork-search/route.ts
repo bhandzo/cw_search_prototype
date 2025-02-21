@@ -128,6 +128,20 @@ export async function POST(request: Request) {
               Authorization: `Bearer ${clockworkAuthKey}`,
             },
           }
+        ).then((res) => {
+          // Log the full request details
+          console.log(`[ClockworkSearch] Request details for keyword "${keyword}", page ${page}:`, {
+            url: res.url,
+            headers: {
+              "X-API-Key": "[REDACTED]",
+              Accept: "application/json",
+              Authorization: "[REDACTED]"
+            },
+            status: res.status,
+            statusText: res.statusText
+          });
+          return res;
+        }
         ).then(async (res) => {
           if (!res.ok) {
             throw new Error(`Clockwork API error: ${res.status}`);
