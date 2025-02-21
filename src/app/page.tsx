@@ -103,14 +103,19 @@ export default function Home() {
           keywords = JSON.parse(response.structuredQuery);
         }
 
+        console.log("[Page] Making clockwork search request with token:", sessionToken);
         const clockworkResponse = await fetch("/api/clockwork-search", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionToken}`
+          },
           body: JSON.stringify({
             keywords,
             originalQuery: query,
           }),
         });
+        console.log("[Page] Clockwork search response status:", clockworkResponse.status);
 
         if (!clockworkResponse.ok) {
           throw new Error("Failed to fetch candidates");
