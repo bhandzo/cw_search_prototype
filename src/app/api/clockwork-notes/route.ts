@@ -18,9 +18,9 @@ export async function POST(
       `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people/${personId}/notes?limit=50`,
       {
         headers: {
-          "X-API-Key": firmApiKey,
-          Accept: "application/json",
-          Authorization: `Bearer ${clockworkAuthKey}`,
+          "X-API-Key": firmApiKey || "",
+          "Accept": "application/json",
+          "Authorization": clockworkAuthKey ? `Bearer ${clockworkAuthKey}` : "",
         },
       }
     );

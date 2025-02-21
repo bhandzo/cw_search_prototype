@@ -76,8 +76,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required credentials" }, { status: 401 });
     }
 
-    console.log(`Making Clockwork API request for firm: ${firmSlug}`);
-    console.log(`Search keywords:`, keywords);
+    console.log(`[ClockworkSearch] Making API request for firm: ${firmSlug}`);
+    console.log(`[ClockworkSearch] Search keywords:`, keywords);
+    console.log(`[ClockworkSearch] Using auth key:`, clockworkAuthKey ? '[REDACTED]' : 'missing');
+    console.log(`[ClockworkSearch] Using firm API key:`, firmApiKey ? '[REDACTED]' : 'missing');
 
     // Flatten keywords object into array while preserving multi-word keywords
     const keywordsList = Object.values(keywords)
@@ -106,7 +108,7 @@ export async function POST(request: Request) {
             headers: {
               "X-API-Key": firmApiKey,
               "Accept": "application/json",
-              "Authorization": clockworkAuthKey,
+              "Authorization": `Bearer ${clockworkAuthKey}`,
             },
           }
         ).then(async (res) => {
