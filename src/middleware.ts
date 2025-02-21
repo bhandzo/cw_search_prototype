@@ -55,7 +55,9 @@ export async function middleware(request: NextRequest) {
 
       // Add user context to request headers
       const requestHeaders = new Headers(request.headers)
-      requestHeaders.set('x-user-id', credentials.userId)
+      if (credentials.userId) {
+        requestHeaders.set('x-user-id', credentials.userId)
+      }
 
       // Clone the request with modified headers
       const response = NextResponse.next({
