@@ -280,14 +280,16 @@ export function SettingsDialog() {
               required
             />
           </div>
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="w-full mb-2" 
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
+          {sessionToken && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full mb-2" 
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          )}
           <Button type="submit" className="w-full" disabled={isValidating}>
             {isValidating ? "Validating..." : "Save"}
           </Button>
