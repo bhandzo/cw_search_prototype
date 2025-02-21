@@ -8,11 +8,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings } from "lucide-react";
 import type { SettingsFormData } from "@/types/settings";
 
 interface SettingsDialogProps {
@@ -26,7 +24,6 @@ export function SettingsDialog({
 }: SettingsDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(
     typeof window !== 'undefined' ? localStorage.getItem('sessionToken') : null
   );

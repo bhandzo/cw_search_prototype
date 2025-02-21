@@ -112,16 +112,6 @@ export async function POST(request: Request) {
       .flat()
       .map((kw) => (typeof kw === "string" ? kw.trim() : ""));
 
-    // Track frequency of each person
-    const personFrequency = new Map<
-      string,
-      {
-        count: number;
-        person: Person;
-        matchedKeywords: Set<string>;
-      }
-    >();
-
     const headers = {
       "X-API-Key": firmApiKey,
       Accept: "application/json",
