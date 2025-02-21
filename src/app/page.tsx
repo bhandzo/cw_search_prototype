@@ -26,138 +26,150 @@ export default function Home() {
       }
 
       const timestamp = Date.now();
-    setSearchHistory((prev) => [
-      { query, timestamp, status: "generating-criteria" },
-      ...prev,
-    ]);
+      setSearchHistory((prev) => [
+        { query, timestamp, status: "generating-criteria" },
+        ...prev,
+      ]);
 
-    try {
-      let keywords;
-      if (existingKeywords) {
-        keywords = existingKeywords;
-      } else {
-        const openaiResponse = await fetch("/api/openai-search", {
+      try {
+        let keywords;
+        if (existingKeywords) {
+          keywords = existingKeywords;
+        } else {
+          const openaiResponse = await fetch("/api/openai-search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userInput: query }),
+          });
+          const response = await openaiResponse.json();
+          keywords = JSON.parse(response.structuredQuery);
+        }
+
+        const clockworkResponse = await fetch("/api/clockwork-search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userInput: query }),
+          body: JSON.stringify({
+            keywords,
+            originalQuery: query,
+          }),
         });
-        const response = await openaiResponse.json();
-        keywords = JSON.parse(response.structuredQuery);
-      }
 
-      const clockworkResponse = await fetch("/api/clockwork-search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          keywords,
-          originalQuery: query,
-        }),
-      });
+        if (!clockworkResponse.ok) {
+          throw new Error("Failed to fetch candidates");
+        }
 
-      if (!clockworkResponse.ok) {
-        throw new Error("Failed to fetch candidates");
-      }
+        const reader = clockworkResponse.body?.getReader();
+        if (!reader) {
+          throw new Error("No response body");
+        }
 
-      const reader = clockworkResponse.body?.getReader();
-      if (!reader) {
-        throw new Error("No response body");
-      }
+        const decoder = new TextDecoder();
+        let buffer = "";
 
-      const decoder = new TextDecoder();
-      let buffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.trim()) continue;
 
-        for (const line of lines) {
-          if (!line.trim()) continue;
+            try {
+              const update = JSON.parse(line);
 
-          try {
-            const update = JSON.parse(line);
+              switch (update.type) {
+                case "initial":
+                  setCurrentResults(update.peopleSearch);
+                  setSearchHistory((prev) =>
+                    prev.map((item) =>
+                      item.timestamp === timestamp
+                        ? {
+                            ...item,
+                            keywords,
+                            resultCount: update.peopleSearch.length,
+                            results: update.peopleSearch,
+                            status: "fetching-notes",
+                          }
+                        : item
+                    )
+                  );
+                  break;
 
-            switch (update.type) {
-              case "initial":
-                setCurrentResults(update.peopleSearch);
-                setSearchHistory((prev) =>
-                  prev.map((item) =>
-                    item.timestamp === timestamp
-                      ? {
-                          ...item,
-                          keywords,
-                          resultCount: update.peopleSearch.length,
-                          results: update.peopleSearch,
-                          status: "fetching-notes",
-                        }
-                      : item
-                  )
-                );
-                break;
+                case "notes":
+                  setCurrentResults((prev) =>
+                    prev.map((person) =>
+                      person.id === update.personId
+                        ? {
+                            ...person,
+                            notes: update.notes?.map((note: Note) => ({
+                              ...note,
+                              content: note.content
+                                ?.replace(/<[^>]*>/g, "") // Remove HTML tags
+                                ?.substring(0, 500), // Limit content length
+                            })),
+                          }
+                        : person
+                    )
+                  );
+                  setSearchHistory((prev) =>
+                    prev.map((item) =>
+                      item.timestamp === timestamp
+                        ? { ...item, status: "summarizing" }
+                        : item
+                    )
+                  );
+                  break;
 
-              case "notes":
-                setCurrentResults((prev) =>
-                  prev.map((person) =>
-                    person.id === update.personId
-                      ? {
-                          ...person,
-                          notes: update.notes?.map((note: Note) => ({
-                            ...note,
-                            content: note.content
-                              ?.replace(/<[^>]*>/g, "") // Remove HTML tags
-                              ?.substring(0, 500), // Limit content length
-                          })),
-                        }
-                      : person
-                  )
-                );
-                setSearchHistory((prev) =>
-                  prev.map((item) =>
-                    item.timestamp === timestamp
-                      ? { ...item, status: "summarizing" }
-                      : item
-                  )
-                );
-                break;
-
-              case "summary":
-                setCurrentResults((prev) =>
-                  prev.map((person) =>
-                    person.id === update.personId
-                      ? {
-                          ...person,
-                          shortSummary: update.shortSummary,
-                          longSummary: update.longSummary,
-                        }
-                      : person
-                  )
-                );
-                break;
+                case "summary":
+                  setCurrentResults((prev) =>
+                    prev.map((person) =>
+                      person.id === update.personId
+                        ? {
+                            ...person,
+                            shortSummary: update.shortSummary,
+                            longSummary: update.longSummary,
+                          }
+                        : person
+                    )
+                  );
+                  break;
+              }
+            } catch (e) {
+              console.error("Error parsing update:", e);
             }
-          } catch (e) {
-            console.error("Error parsing update:", e);
           }
         }
-      }
 
-      // Mark search as complete
-      setSearchHistory((prev) =>
-        prev.map((item) =>
-          item.timestamp === timestamp ? { ...item, status: "complete" } : item
-        )
-      );
+        // Mark search as complete
+        setSearchHistory((prev) =>
+          prev.map((item) =>
+            item.timestamp === timestamp ? { ...item, status: "complete" } : item
+          )
+        );
+      } catch (error) {
+        console.error("Error in search:", error);
+        console.error("Search error:", error);
+        setSearchHistory((prev) => [
+          { 
+            query, 
+            timestamp: Date.now(), 
+            status: "error",
+            error: error instanceof Error ? error.message : "An error occurred during search"
+          },
+          ...prev,
+        ]);
+      }
     } catch (error) {
-      console.error("Error in search:", error);
-      console.error("Search error:", error);
+      console.error("Credentials error:", error);
       setSearchHistory((prev) => [
-        { 
-          query, 
-          timestamp: Date.now(), 
+        {
+          query,
+          timestamp: Date.now(),
           status: "error",
-          error: error instanceof Error ? error.message : "An error occurred during search"
+          error: "Please configure your credentials"
         },
         ...prev,
       ]);
