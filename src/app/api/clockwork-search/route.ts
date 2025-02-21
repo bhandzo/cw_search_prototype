@@ -115,46 +115,55 @@ export async function POST(request: Request) {
 
     // Make requests for each keyword, getting first two pages
     const searchPromises = keywordsList.flatMap((keyword: string) => {
-      const pages = [0, 1];
-      return pages.map(async (page) => {
+      const offsets = [0, 50];
+      return offsets.map(async (offset) => {
         const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?q=${encodeURIComponent(
           keyword
-        )}&page=${page}&limit=50`;
-        
+        )}&offset=${offset}&limit=50`;
+
         const headers = {
           "X-API-Key": firmApiKey,
-          "Accept": "application/json",
-          "Authorization": `Bearer ${clockworkAuthKey}`,
+          Accept: "application/json",
+          Authorization: `Bearer ${clockworkAuthKey}`,
         };
 
-        console.log(`[ClockworkSearch] Making request for "${keyword}" page ${page}:`, {
-          url,
-          headers: {
-            "X-API-Key": "[REDACTED]",
-            "Accept": "application/json",
-            "Authorization": "[REDACTED]"
+        console.log(
+          `[ClockworkSearch] Making request for "${keyword}" offset ${offset}:`,
+          {
+            url,
+            headers: {
+              "X-API-Key": "[REDACTED]",
+              Accept: "application/json",
+              Authorization: "[REDACTED]",
+            },
           }
-        });
+        );
 
         const res = await fetch(url, { headers });
-        
-        console.log(`[ClockworkSearch] Response for "${keyword}" page ${page}:`, {
-          status: res.status,
-          statusText: res.statusText,
-          headers: Object.fromEntries(res.headers.entries())
-        });
+
+        console.log(
+          `[ClockworkSearch] Response for "${keyword}" page ${page}:`,
+          {
+            status: res.status,
+            statusText: res.statusText,
+            headers: Object.fromEntries(res.headers.entries()),
+          }
+        );
 
         if (!res.ok) {
           const errorText = await res.text();
-          console.error(`[ClockworkSearch] Error response for "${keyword}":`, errorText);
+          console.error(
+            `[ClockworkSearch] Error response for "${keyword}":`,
+            errorText
+          );
           throw new Error(`Clockwork API error: ${res.status} - ${errorText}`);
         }
 
         const data = await res.json();
         console.log(`[ClockworkSearch] Success for "${keyword}":`, {
-          totalResults: data.peopleSearch?.length || 0
+          totalResults: data.peopleSearch?.length || 0,
         });
-        
+
         return { keyword, data };
       });
     });
