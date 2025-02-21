@@ -20,7 +20,7 @@ export async function POST(
 
     // Call the external API using the retrieved credentials.
     const response = await fetch(
-      `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people/${personId}/notes`,
+      `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people/${personId}/notes?limit=50`,
       {
         headers: {
           "X-API-Key": firmApiKey,

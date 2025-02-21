@@ -83,9 +83,9 @@ export async function POST(request: Request) {
       const pages = [1, 2];
       return pages.map((page) =>
         fetch(
-          `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(
+          `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?q=${encodeURIComponent(
             keyword
-          )}&page=${page}`,
+          )}&page=${page}&limit=50`,
           {
             headers: {
               "X-API-Key": firmApiKey,

@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     console.log("[Validate] Starting validation for firm:", firmSlug);
     
-    const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?limit=1`;
+    const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people?limit=1`;
     console.log("[Validate] Request URL:", url);
     const headers = new Headers();
     headers.append("X-API-Key", firmApiKey);
