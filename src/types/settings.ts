@@ -6,11 +6,7 @@ export interface Credentials {
   maxCandidates: number;
 }
 
-export interface SettingsFormData {
-  firmSlug: string;
-  firmApiKey: string;
+export interface SettingsFormData extends Omit<Credentials, 'clockworkAuthKey'> {
   clockworkApiKey: string;
   clockworkApiSecret: string;
-  openaiApiKey: string;
-  maxCandidates: number;
 }
