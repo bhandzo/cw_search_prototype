@@ -157,14 +157,6 @@ export async function POST(request: Request) {
         
         return { keyword, data };
       });
-        ).then(async (res) => {
-          if (!res.ok) {
-            throw new Error(`Clockwork API error: ${res.status}`);
-          }
-          const data = await res.json();
-          return { keyword, data };
-        })
-      );
     });
 
     // Wait for all requests to complete
