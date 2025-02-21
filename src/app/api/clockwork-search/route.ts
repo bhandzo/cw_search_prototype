@@ -50,19 +50,14 @@ export async function POST(request: Request) {
     const body = (await request.json()) as SearchRequestBody;
     const { keywords } = body;
 
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: "No session token provided" }, { status: 401 });
+    // Get user context added by middleware
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const sessionToken = authHeader.split('Bearer ')[1];
-    const credentials = await getCredentialsFromToken(sessionToken);
-    
-    if (!credentials) {
-      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
-    }
-
-    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
+    const credentials = await getCredentialsFromToken(request.headers.get('Authorization')?.split('Bearer ')[1] || '');
+    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials || {};
 
     console.log(`Making Clockwork API request for firm: ${firmSlug}`);
     console.log("Using auth key:", clockworkAuthKey);
