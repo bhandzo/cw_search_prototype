@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,12 +20,12 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({
   open: controlledOpen,
-  onOpenChange: setControlledOpen
+  onOpenChange: setControlledOpen,
 }: SettingsDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [sessionToken, setSessionToken] = useState<string | null>(
-    typeof window !== 'undefined' ? localStorage.getItem('sessionToken') : null
+    typeof window !== "undefined" ? localStorage.getItem("sessionToken") : null
   );
   const [formData, setFormData] = useState<SettingsFormData>({
     firmSlug: "",
@@ -38,23 +38,23 @@ export function SettingsDialog({
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem('sessionToken');
+      const token = localStorage.getItem("sessionToken");
       if (!token) return;
 
       const response = await fetch("/api/credentials", {
         method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to logout");
       }
-      
-      localStorage.removeItem('sessionToken');
+
+      localStorage.removeItem("sessionToken");
       setSessionToken(null);
-      
+
       // Reset form data
       setFormData({
         firmSlug: "",
@@ -64,7 +64,7 @@ export function SettingsDialog({
         openaiApiKey: "",
         maxCandidates: 5,
       });
-      
+
       router.refresh();
     } catch (error) {
       console.error("Error logging out:", error);
@@ -74,26 +74,32 @@ export function SettingsDialog({
 
   useEffect(() => {
     const loadCredentials = async () => {
-      const token = localStorage.getItem('sessionToken');
+      const token = localStorage.getItem("sessionToken");
       setSessionToken(token);
-      
+
       if (!token) {
         setOpen(true); // Open dialog if no session token exists
         return;
       }
 
       try {
-        console.log("[SettingsDialog] Loading credentials with session token:", token);
+        console.log(
+          "[SettingsDialog] Loading credentials with session token:",
+          token
+        );
         const response = await fetch("/api/credentials", {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
-        
-        console.log("[SettingsDialog] Credentials load response status:", response.status);
+
+        console.log(
+          "[SettingsDialog] Credentials load response status:",
+          response.status
+        );
         if (!response.ok) {
           if (response.status === 401) {
-            localStorage.removeItem('sessionToken');
+            localStorage.removeItem("sessionToken");
             setSessionToken(null);
             setOpen(true);
             return;
@@ -104,9 +110,11 @@ export function SettingsDialog({
         const credentials = await response.json();
         console.log("[SettingsDialog] Loaded credentials:", {
           ...credentials,
-          clockworkAuthKey: credentials.clockworkAuthKey ? '[REDACTED]' : undefined
+          clockworkAuthKey: credentials.clockworkAuthKey
+            ? "[REDACTED]"
+            : undefined,
         });
-        
+
         // Split the clockworkAuthKey into API key and secret
         let clockworkApiKey = "";
         let clockworkApiSecret = "";
@@ -115,7 +123,10 @@ export function SettingsDialog({
             const decoded = atob(credentials.clockworkAuthKey);
             [clockworkApiKey, clockworkApiSecret] = decoded.split(":");
           } catch (e) {
-            console.error("[SettingsDialog] Error decoding clockwork auth key:", e);
+            console.error(
+              "[SettingsDialog] Error decoding clockwork auth key:",
+              e
+            );
           }
         }
 
@@ -127,7 +138,6 @@ export function SettingsDialog({
           openaiApiKey: credentials.openaiApiKey || "",
           maxCandidates: credentials.maxCandidates || 5,
         });
-        
       } catch (error) {
         console.error("[SettingsDialog] Error loading credentials:", error);
         setOpen(true);
@@ -163,9 +173,9 @@ export function SettingsDialog({
       console.log("[SettingsDialog] Saving credentials...");
       const saveResponse = await fetch("/api/credentials", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": sessionToken ? `Bearer ${sessionToken}` : ''
+          Authorization: sessionToken ? `Bearer ${sessionToken}` : "",
         },
         body: JSON.stringify(credentialsToSave),
       });
@@ -178,31 +188,35 @@ export function SettingsDialog({
 
       const responseData = await saveResponse.json();
       console.log("[SettingsDialog] Save response data:", responseData);
-      
+
       if (!responseData.token) {
         throw new Error("No session token received");
       }
-      
-      console.log("[SettingsDialog] Setting new session token:", responseData.token);
-      localStorage.setItem('sessionToken', responseData.token);
+
+      console.log(
+        "[SettingsDialog] Setting new session token:",
+        responseData.token
+      );
+      localStorage.setItem("sessionToken", responseData.token);
       setSessionToken(responseData.token);
-      
+
       // Only close dialog if both validation and save succeed
       setOpen(false);
-      setIsOpen(false);
       setControlledOpen?.(false);
-      
+
       // Force a page refresh to ensure new token is used
       router.refresh();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An unknown error occurred");
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <Dialog 
+    <Dialog
       open={controlledOpen ?? open}
       onOpenChange={(value) => {
         setOpen(value);
@@ -308,10 +322,10 @@ export function SettingsDialog({
             />
           </div>
           {sessionToken && (
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full mb-2" 
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mb-2"
               onClick={handleLogout}
             >
               Logout

@@ -320,3 +320,62 @@ Following these iterative prompts will guide a code-generation LLM to produce a 
 • Incremental yet meaningful progress
 
 You can now copy these prompts (one at a time) into your code-generation environment, review the output, integrate it into your repository, and proceed until all steps are completed.
+
+I'll outline the steps to implement this architecture change:
+
+1 Setup Phase:
+
+• Add Upstash Redis to the project  
+ • Create necessary environment variables for Upstash connection  
+ • Create types for user sessions and stored credentials
+
+2 User Management:
+
+• When credentials are submitted in settings form:  
+ • Generate a unique user ID  
+ • Create a session token  
+ • Store credentials in Redis with the user ID as key  
+ • Return the session token to the client  
+ • Store session token in localStorage (not cookies)
+
+3 Session Management:
+
+• Create middleware to:  
+ • Check for session token in request headers  
+ • Validate session token against Redis  
+ • Add user context to request  
+ • Handle expired/invalid sessions
+
+4 Token Service Updates:
+
+• Modify TokenService to:  
+ • Accept session token as parameter  
+ • Retrieve credentials from Redis using session token  
+ • Cache credentials temporarily to reduce Redis calls  
+ • Handle token expiration and renewal
+
+5 API Route Updates:
+
+• Modify all API routes to:  
+ • Expect session token in headers  
+ • Use updated TokenService  
+ • Return appropriate errors for missing/invalid sessions
+
+6 Frontend Updates:
+
+• Update settings dialog to:  
+ • Handle session token storage  
+ • Include session token in all API calls  
+ • Handle session expiration  
+ • Provide logout functionality
+
+7 Security Considerations:
+
+• Implement token rotation  
+ • Set appropriate TTL for Redis keys  
+ • Encrypt sensitive data in Redis  
+ • Implement rate limiting  
+ • Add audit logging
+
+Would you like me to elaborate on any of these steps or move forward with implementing a  
+specific part?
