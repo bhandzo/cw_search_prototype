@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { getCredentialsFromToken } from "@/lib/redis";
 
 import { Person } from "@/types/clockwork";
 
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
     }
 
     const sessionToken = authHeader.split('Bearer ')[1];
-    const credentials = await tokenService.getCredentials(sessionToken);
+    const credentials = await getCredentialsFromToken(sessionToken);
     
     if (!credentials) {
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });
