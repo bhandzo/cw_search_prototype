@@ -9,6 +9,8 @@ import { Sidebar } from "@/components/sidebar";
 import { CandidateCard } from "@/components/candidate-card";
 import { ProfileDrawer } from "@/components/profile-drawer";
 import { SettingsDialog } from "@/components/settings-dialog";
+import { Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
 
@@ -232,7 +234,16 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen relative">
+      <div className="absolute top-4 right-4 z-10">
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => setShowSettings(true)}
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+      </div>
       {searchHistory.length > 0 ? (
         <>
           <Sidebar searchHistory={searchHistory} onSearch={handleSearch} />
