@@ -51,12 +51,14 @@ export async function POST(request: Request) {
     const { keywords } = body;
 
     // Get user context added by middleware
-    const userId = request.headers.get('x-user-id');
+    const userId = request.headers.get("x-user-id");
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const credentials = await getCredentialsFromToken(request.headers.get('Authorization')?.split('Bearer ')[1] || '');
+    const credentials = await getCredentialsFromToken(
+      request.headers.get("Authorization")?.split("Bearer ")[1] || ""
+    );
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials || {};
 
     console.log(`Making Clockwork API request for firm: ${firmSlug}`);
@@ -88,7 +90,7 @@ export async function POST(request: Request) {
           )}&page=${page}&limit=50`,
           {
             headers: {
-              "X-API-Key": firmApiKey,
+              "X-API-Key": firmApiKey || "",
               Accept: "application/json",
               Authorization: `Bearer ${clockworkAuthKey}`,
             },
