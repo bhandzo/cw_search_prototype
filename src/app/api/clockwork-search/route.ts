@@ -50,6 +50,15 @@ export async function POST(request: Request) {
     const body = (await request.json()) as SearchRequestBody;
     const { keywords } = body;
 
+    // Organize keywords by category
+    const categorizedKeywords = {
+      title: keywords.title || [],
+      industry: keywords.industry || [],
+      experience: keywords.experience || [],
+      skills: keywords.skills || [], 
+      location: keywords.location || []
+    };
+
     const authHeader = request.headers.get("Authorization");
     console.log("[ClockworkSearch] Auth header:", authHeader);
 
@@ -113,69 +122,62 @@ export async function POST(request: Request) {
       }
     >();
 
-    // Make initial requests for each keyword to get total counts
-    const searchPromises = await Promise.all(
-      keywordsList.map(async (keyword: string) => {
-        const headers = {
-          "X-API-Key": firmApiKey,
-          Accept: "application/json",
-          Authorization: `Bearer ${clockworkAuthKey}`,
-        };
+    const headers = {
+      "X-API-Key": firmApiKey,
+      Accept: "application/json",
+      Authorization: `Bearer ${clockworkAuthKey}`,
+    };
 
-        // Initial request without pagination
-        const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(
-          keyword
-        )}`;
+    const searchPromises = [];
 
-        console.log(
-          `[ClockworkSearch] Making initial request for "${keyword}":`,
-          {
-            url,
-            headers: {
-              "X-API-Key": "[REDACTED]",
-              Accept: "application/json",
-              Authorization: "[REDACTED]",
-            },
+    // Search title keywords first (limit 20 per keyword)
+    for (const keyword of categorizedKeywords.title) {
+      const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(keyword)}&limit=20`;
+      searchPromises.push(
+        fetch(url, { headers }).then(async (res) => {
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Clockwork API error: ${res.status} - ${errorText}`);
           }
-        );
+          const data = await res.json();
+          return { keyword, category: 'title', data };
+        })
+      );
+    }
 
-        const initialRes = await fetch(url, { headers });
-
-        if (!initialRes.ok) {
-          const errorText = await initialRes.text();
-          console.error(
-            `[ClockworkSearch] Error response for "${keyword}":`,
-            errorText
-          );
-          throw new Error(
-            `Clockwork API error: ${initialRes.status} - ${errorText}`
-          );
-        }
-
-        const data = await initialRes.json();
-        console.log(`[ClockworkSearch] Response for "${keyword}":`, {
-          status: initialRes.status,
-          statusText: initialRes.statusText,
-          headers: Object.fromEntries(initialRes.headers.entries()),
-          totalResults: data.meta?.total || 0,
-          resultCount: data.peopleSearch?.length || 0,
-          meta: data.meta,
-        });
-
-        return { keyword, data };
-      })
-    );
+    // Search industry keywords second (limit 20 per keyword)
+    for (const keyword of categorizedKeywords.industry) {
+      const url = `https://api.clockworkrecruiting.com/v3.0/${firmSlug}/people_search?q=${encodeURIComponent(keyword)}&limit=20`;
+      searchPromises.push(
+        fetch(url, { headers }).then(async (res) => {
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Clockwork API error: ${res.status} - ${errorText}`);
+          }
+          const data = await res.json();
+          return { keyword, category: 'industry', data };
+        })
+      );
+    }
 
     // Wait for all requests to complete
     const results = await Promise.all(searchPromises);
 
-    // Process results and count frequencies
-    results.forEach(({ keyword, data }) => {
+    // Wait for all requests to complete
+    const results = await Promise.all(searchPromises);
+
+    const personMatches = new Map<string, {
+      person: Person,
+      categories: Set<string>,
+      matchedKeywords: Set<string>
+    }>();
+
+    // Process results and track categories
+    results.forEach(({ keyword, category, data }) => {
       (data.peopleSearch || []).forEach((person: Person) => {
-        if (personFrequency.has(person.id)) {
-          const entry = personFrequency.get(person.id)!;
-          entry.count++;
-          // Only add the exact keyword that matched
+        if (personMatches.has(person.id)) {
+          const entry = personMatches.get(person.id)!;
+          entry.categories.add(category);
           if (
             person.name.toLowerCase().includes(keyword.toLowerCase()) ||
             JSON.stringify(person).toLowerCase().includes(keyword.toLowerCase())
@@ -183,7 +185,6 @@ export async function POST(request: Request) {
             entry.matchedKeywords.add(keyword);
           }
         } else {
-          // Check if this keyword actually matches before adding it
           const matchedKeywords = new Set<string>();
           if (
             person.name.toLowerCase().includes(keyword.toLowerCase()) ||
@@ -191,22 +192,34 @@ export async function POST(request: Request) {
           ) {
             matchedKeywords.add(keyword);
           }
-          personFrequency.set(person.id, {
-            count: 1,
+          personMatches.set(person.id, {
             person,
-            matchedKeywords,
+            categories: new Set([category]),
+            matchedKeywords
           });
         }
       });
     });
 
-    // Sort by frequency and convert back to array
-    const allResults = Array.from(personFrequency.values())
-      .sort((a, b) => b.count - a.count)
-      .map(({ person, count, matchedKeywords }) => ({
+    // Convert to array and filter/sort results
+    const allResults = Array.from(personMatches.values())
+      // Only include results that matched title or industry
+      .filter(({ categories }) => 
+        categories.has('title') || categories.has('industry')
+      )
+      // Sort by number of matching categories and keywords
+      .sort((a, b) => {
+        // First sort by number of categories matched
+        const catDiff = b.categories.size - a.categories.size;
+        if (catDiff !== 0) return catDiff;
+        // Then by number of keywords matched
+        return b.matchedKeywords.size - a.matchedKeywords.size;
+      })
+      .map(({ person, categories, matchedKeywords }) => ({
         ...person,
-        matchScore: count,
+        matchScore: categories.size + (matchedKeywords.size * 0.5),
         matchedKeywords: Array.from(matchedKeywords),
+        matchedCategories: Array.from(categories)
       }));
 
     const resultsToProcess = allResults.slice(0, credentials.maxCandidates);
