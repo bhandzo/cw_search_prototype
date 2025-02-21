@@ -4,15 +4,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
+    const authHeader = request.headers.get('Authorization');
     const credentials = await request.json();
-
-    if (!credentials) {
-      console.error("Invalid or expired session token");
-      return NextResponse.json(
-        { error: "Invalid or expired session" },
-        { status: 401 }
-      );
-    }
+    
+    console.log("[Validate] Auth header:", authHeader);
+    console.log("[Validate] Received credentials:", credentials);
 
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials || {};
 

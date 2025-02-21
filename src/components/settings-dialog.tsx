@@ -161,7 +161,10 @@ export function SettingsDialog({
       console.log("[SettingsDialog] Validating credentials...");
       const validationResponse = await fetch("/api/clockwork-search/validate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": sessionToken ? `Bearer ${sessionToken}` : ''
+        },
         body: JSON.stringify(credentialsToSave),
       });
 
