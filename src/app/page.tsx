@@ -19,13 +19,13 @@ export default function Home() {
     query: string,
     existingKeywords?: Record<string, string[]>
   ) => {
-    const credentialsResponse = await fetch("/api/credentials");
-    if (!credentialsResponse.ok) {
-      alert("Please configure your credentials");
-      return;
-    }
+    try {
+      const credentialsResponse = await fetch("/api/credentials");
+      if (!credentialsResponse.ok) {
+        throw new Error("Please configure your credentials");
+      }
 
-    const timestamp = Date.now();
+      const timestamp = Date.now();
     setSearchHistory((prev) => [
       { query, timestamp, status: "generating-criteria" },
       ...prev,
@@ -151,11 +151,16 @@ export default function Home() {
       );
     } catch (error) {
       console.error("Error in search:", error);
-      setSearchHistory((prev) =>
-        prev.map((item) =>
-          item.timestamp === timestamp ? { ...item, status: "error" } : item
-        )
-      );
+      console.error("Search error:", error);
+      setSearchHistory((prev) => [
+        { 
+          query, 
+          timestamp: Date.now(), 
+          status: "error",
+          error: error instanceof Error ? error.message : "An error occurred during search"
+        },
+        ...prev,
+      ]);
     }
   };
 
