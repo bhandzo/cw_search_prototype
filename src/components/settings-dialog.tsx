@@ -186,14 +186,22 @@ export function SettingsDialog({
         throw new Error("Failed to save credentials");
       }
 
-      const { sessionToken } = await saveResponse.json();
-      localStorage.setItem('sessionToken', sessionToken);
-      setSessionToken(sessionToken);
+      const { token } = await saveResponse.json();
+      if (!token) {
+        throw new Error("No session token received");
+      }
+      
+      console.log("Received new session token:", token);
+      localStorage.setItem('sessionToken', token);
+      setSessionToken(token);
       
       // Only close dialog if both validation and save succeed
       setOpen(false);
       setIsOpen(false);
       setControlledOpen?.(false);
+      
+      // Force a page refresh to ensure new token is used
+      router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {

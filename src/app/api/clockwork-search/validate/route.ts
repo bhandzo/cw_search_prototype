@@ -3,24 +3,19 @@ import { getCredentialsFromToken } from "@/lib/redis";
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get('Authorization');
-    console.log("Auth header:", authHeader);
-    
-    const sessionToken = authHeader?.split('Bearer ')[1];
-    console.log("Extracted session token:", sessionToken);
-    
-    if (!sessionToken) {
-      console.error("No session token provided");
-      return NextResponse.json({ error: "No session token provided" }, { status: 401 });
-    }
-
-    const credentials = await getCredentialsFromToken(sessionToken);
+    // For initial validation, we'll use the credentials from the request body
+    const credentials = await request.json();
     if (!credentials) {
       console.error("Invalid or expired session token");
       return NextResponse.json({ error: "Invalid or expired session" }, { status: 401 });
     }
 
-    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials;
+    const { firmSlug, firmApiKey, clockworkAuthKey } = credentials || {};
+    
+    if (!firmSlug || !firmApiKey || !clockworkAuthKey) {
+      console.error("Missing required credentials");
+      return NextResponse.json({ error: "Missing required credentials" }, { status: 400 });
+    }
 
     console.log(`Validating credentials for firm: ${firmSlug}`);
     console.log("Using auth key:", clockworkAuthKey);
