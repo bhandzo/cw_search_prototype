@@ -2,27 +2,31 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { cookies } from "next/headers";
 
-export async function POST(request: Request) {
-  // Get OpenAI API key
-  let apiKey = process.env.OPENAI_API_KEY;
-  
-  if (!apiKey) {
-    // Fall back to credentials cookie
-    const credentialsCookie = (await cookies()).get("credentials");
-    if (!credentialsCookie) {
-      throw new Error("No OpenAI API key found - please configure in settings");
-    }
-    
-    const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
-    if (!credentials.openaiApiKey) {
-      throw new Error("No OpenAI API key found - please configure in settings");
-    }
-    
-    apiKey = credentials.openaiApiKey;
+async function getOpenAIKey() {
+  // Try environment variable first
+  if (process.env.OPENAI_API_KEY) {
+    return process.env.OPENAI_API_KEY;
   }
 
-  const openai = new OpenAI({ apiKey });
+  // Fall back to credentials cookie
+  const credentialsCookie = (await cookies()).get("credentials");
+  if (!credentialsCookie) {
+    throw new Error("No credentials found");
+  }
+
+  const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
+  if (!credentials.openaiApiKey) {
+    throw new Error("No OpenAI API key found in credentials");
+  }
+
+  return credentials.openaiApiKey;
+}
+
+export async function POST(request: Request) {
   try {
+    const apiKey = await getOpenAIKey();
+    const openai = new OpenAI({ apiKey });
+
     const body = await request.json();
     const { person, originalQuery, keywords } = body;
 
@@ -63,176 +67,30 @@ Write two summaries:
       temperature: 0.7,
     });
 
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
+    const summary = completion.choices[0]?.message?.content;
+    if (!summary) {
       throw new Error("Failed to generate summary");
     }
 
-    // Split the content into the two summaries
-    const [shortSummary, longSummary] = content
-      .split("\n\n")
-      .filter(Boolean)
-      .map(summary => summary.trim());
-
-    return NextResponse.json({
-      shortSummary,
-      longSummary,
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
-      },
-    });
-  } catch (error) {
-    console.error("OpenAI API error:", error);
     return NextResponse.json(
-      { error: "Failed to generate summary" },
-      { 
-        status: 500,
+      {
+        shortSummary: summary.split("\n\n")[0],
+        longSummary: summary.split("\n\n")[1],
+      },
+      {
         headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
         },
       }
     );
-  }
-}
-import { NextResponse } from "next/server";
-import OpenAI from "openai";
-import { cookies } from "next/headers";
-
-async function getOpenAIKey() {
-  // Try environment variable first
-  if (process.env.OPENAI_API_KEY) {
-    return process.env.OPENAI_API_KEY;
-  }
-
-  // Fall back to credentials cookie
-  const credentialsCookie = (await cookies()).get("credentials");
-  if (!credentialsCookie) {
-    throw new Error("No credentials found");
-  }
-  
-  const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
-  if (!credentials.openaiApiKey) {
-    throw new Error("No OpenAI API key found in credentials");
-  }
-  
-  return credentials.openaiApiKey;
-}
-
-export async function POST(request: Request) {
-  try {
-    const apiKey = await getOpenAIKey();
-    const openai = new OpenAI({ apiKey });
-    
-    const body = await request.json();
-    const { person, originalQuery, keywords } = body;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-0125-preview",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert at analyzing candidate profiles and providing relevant summaries focused on search criteria matches."
-        },
-        {
-          role: "user", 
-          content: `Analyze this candidate profile for the search "${originalQuery}" with keywords ${JSON.stringify(keywords)}:\n${JSON.stringify(person, null, 2)}`
-        }
-      ],
-      temperature: 0.7,
-    });
-
-    const summary = completion.choices[0]?.message?.content;
-    if (!summary) {
-      throw new Error("Failed to generate summary");
-    }
-
-    return NextResponse.json({
-      shortSummary: summary.split('\n\n')[0],
-      longSummary: summary.split('\n\n')[1]
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
-      },
-    });
-    
   } catch (error) {
     console.error("OpenAI API error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to process request" },
-      { status: 500 }
-    );
-  }
-}
-import { NextResponse } from "next/server";
-import OpenAI from "openai";
-import { cookies } from "next/headers";
-
-async function getOpenAIKey() {
-  // Try environment variable first
-  if (process.env.OPENAI_API_KEY) {
-    return process.env.OPENAI_API_KEY;
-  }
-
-  // Fall back to credentials cookie
-  const credentialsCookie = (await cookies()).get("credentials");
-  if (!credentialsCookie) {
-    throw new Error("No credentials found");
-  }
-  
-  const credentials = JSON.parse(decodeURIComponent(credentialsCookie.value));
-  if (!credentials.openaiApiKey) {
-    throw new Error("No OpenAI API key found in credentials");
-  }
-  
-  return credentials.openaiApiKey;
-}
-
-export async function POST(request: Request) {
-  try {
-    const apiKey = await getOpenAIKey();
-    const openai = new OpenAI({ apiKey });
-    
-    const body = await request.json();
-    const { person, originalQuery, keywords } = body;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-0125-preview",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert at analyzing candidate profiles and providing relevant summaries focused on search criteria matches."
-        },
-        {
-          role: "user", 
-          content: `Analyze this candidate profile for the search "${originalQuery}" with keywords ${JSON.stringify(keywords)}:\n${JSON.stringify(person, null, 2)}`
-        }
-      ],
-      temperature: 0.7,
-    });
-
-    const summary = completion.choices[0]?.message?.content;
-    if (!summary) {
-      throw new Error("Failed to generate summary");
-    }
-
-    return NextResponse.json({
-      shortSummary: summary.split('\n\n')[0],
-      longSummary: summary.split('\n\n')[1]
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
+      {
+        error:
+          error instanceof Error ? error.message : "Failed to process request",
       },
-    });
-    
-  } catch (error) {
-    console.error("OpenAI API error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to process request" },
       { status: 500 }
     );
   }
