@@ -1,8 +1,9 @@
-export interface UserSession {
-  id: string;          // Unique session identifier
-  createdAt: number;   // Timestamp of session creation
-  expiresAt: number;   // Timestamp of session expiration
-  lastUsed: number;    // Timestamp of last activity
+export interface Credentials {
+  firmSlug: string;
+  firmApiKey: string;
+  clockworkAuthKey: string;
+  openaiApiKey: string;
+  maxCandidates: number;
 }
 
 export interface StoredCredentials extends Credentials {
