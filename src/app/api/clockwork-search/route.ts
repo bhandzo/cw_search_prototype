@@ -163,9 +163,6 @@ export async function POST(request: Request) {
     // Wait for all requests to complete
     const results = await Promise.all(searchPromises);
 
-    // Wait for all requests to complete
-    const results = await Promise.all(searchPromises);
-
     const personMatches = new Map<string, {
       person: Person,
       categories: Set<string>,
