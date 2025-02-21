@@ -6,8 +6,14 @@ export interface Credentials {
   maxCandidates: number;
 }
 
-export interface StoredCredentials extends Credentials {
-  userId: string;      // Link to the user's session
-  createdAt: number;   // When credentials were first stored
-  updatedAt: number;   // When credentials were last updated
+export interface StoredCredentials extends Omit<Credentials, 'clockworkAuthKey'> {
+  clockworkAuthKey?: string;  // May be null when deleting
+  userId?: string;           // Optional since we don't always have user context
+  createdAt?: number;        // Optional for backward compatibility
+  updatedAt?: number;        // Optional for backward compatibility
+}
+
+export interface DecodedCredentials extends Omit<Credentials, 'clockworkAuthKey'> {
+  clockworkApiKey: string;
+  clockworkApiSecret: string;
 }

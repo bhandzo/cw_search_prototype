@@ -1,9 +1,10 @@
 import { Redis } from '@upstash/redis';
+import type { StoredCredentials } from '@/types/auth';
 
 // Initialize Redis using environment variables
 const redis = Redis.fromEnv();
 
-export async function storeCredentials(token: string, credentials: any): Promise<void> {
+export async function storeCredentials(token: string, credentials: StoredCredentials | null): Promise<void> {
   console.log("[Redis] Storing credentials for token:", token);
   try {
     if (credentials === null) {
@@ -22,7 +23,7 @@ export async function storeCredentials(token: string, credentials: any): Promise
   }
 }
 
-export async function getCredentialsFromToken(token: string): Promise<any> {
+export async function getCredentialsFromToken(token: string): Promise<StoredCredentials | null> {
   console.log("[Redis] Getting credentials for token:", token);
   try {
     const credentials = await redis.get(`credentials:${token}`);
