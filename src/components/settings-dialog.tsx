@@ -136,13 +136,13 @@ export function SettingsDialog({
   }, []); // Remove sessionToken from dependencies
 
   const [error, setError] = useState<string | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("[SettingsDialog] Starting submit");
     setError(null);
-    setIsValidating(true);
+    setIsSaving(true);
 
     const clockworkAuthKey = btoa(
       `${formData.clockworkApiKey}:${formData.clockworkApiSecret}`
@@ -158,31 +158,6 @@ export function SettingsDialog({
     };
 
     try {
-      console.log("[SettingsDialog] Starting validation...");
-      console.log("[SettingsDialog] Session token:", sessionToken);
-      console.log("[SettingsDialog] Credentials to validate:", {
-        ...credentialsToSave,
-        clockworkAuthKey: '[REDACTED]'
-      });
-      
-      const validationResponse = await fetch("/api/clockwork-search/validate", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": sessionToken ? `Bearer ${sessionToken}` : ''
-        },
-        body: JSON.stringify(credentialsToSave),
-      });
-      
-      console.log("[SettingsDialog] Validation response status:", validationResponse.status);
-
-      console.log("[SettingsDialog] Validation response:", validationResponse.status);
-
-      if (!validationResponse.ok) {
-        const errorData = await validationResponse.json();
-        throw new Error(errorData.error || "Invalid credentials");
-      }
-
       console.log("[SettingsDialog] Saving credentials...");
       const saveResponse = await fetch("/api/credentials", {
         method: "POST",
@@ -220,7 +195,7 @@ export function SettingsDialog({
     } catch (error) {
       setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
-      setIsValidating(false);
+      setIsSaving(false);
     }
   };
 
@@ -340,8 +315,8 @@ export function SettingsDialog({
               Logout
             </Button>
           )}
-          <Button type="submit" className="w-full" disabled={isValidating}>
-            {isValidating ? "Validating..." : "Save"}
+          <Button type="submit" className="w-full" disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save"}
           </Button>
         </form>
       </DialogContent>
