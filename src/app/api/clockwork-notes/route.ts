@@ -9,11 +9,6 @@ export async function POST(
     // Read the JSON payload; expecting personId to be passed in the request body.
     const { personId } = await request.json();
 
-    // Get user context added by middleware
-    const userId = request.headers.get('x-user-id');
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const credentials = await getCredentialsFromToken(request.headers.get('Authorization')?.split('Bearer ')[1] || '');
     const { firmSlug, firmApiKey, clockworkAuthKey } = credentials || {};

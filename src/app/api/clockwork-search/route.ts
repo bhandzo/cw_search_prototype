@@ -50,11 +50,6 @@ export async function POST(request: Request) {
     const body = (await request.json()) as SearchRequestBody;
     const { keywords } = body;
 
-    // Get user context added by middleware
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const authToken = request.headers.get("Authorization")?.split("Bearer ")[1];
     if (!authToken) {
