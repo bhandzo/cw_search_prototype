@@ -50,6 +50,7 @@ export default function Home() {
     existingKeywords?: Record<string, string[]>
   ) => {
     try {
+      console.log("Search initiated with session token:", sessionToken);
       if (!sessionToken) {
         throw new Error("Please configure your credentials");
       }
@@ -60,6 +61,8 @@ export default function Home() {
         }
       });
 
+      console.log("Credentials verification response:", credentialsResponse.status);
+      
       if (!credentialsResponse.ok) {
         if (credentialsResponse.status === 401) {
           localStorage.removeItem('sessionToken');

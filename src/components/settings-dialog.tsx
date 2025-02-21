@@ -75,12 +75,14 @@ export function SettingsDialog() {
       }
 
       try {
+        console.log("Loading credentials with session token:", sessionToken);
         const response = await fetch("/api/credentials", {
           headers: {
             'Authorization': `Bearer ${sessionToken}`
           }
         });
         
+        console.log("Credentials load response status:", response.status);
         if (!response.ok) {
           if (response.status === 401) {
             localStorage.removeItem('sessionToken');
